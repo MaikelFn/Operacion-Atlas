@@ -1,35 +1,35 @@
-modulo(puente_mando).
-modulo(laboratorio).
-modulo(modulo_energia).
-modulo(enfermeria).
-modulo(modulo_escape).
-
+% Modulos
+modulo(puente_mando, "Centro principal de la estacion.").
+modulo(laboratorio, "Laboratorio cientifico parcialmente destruido.").
+modulo(modulo_energia, "Modulo encargado del suministro energetico.").
+modulo(enfermeria, "Area medica de emergencia.").
+modulo(modulo_escape, "Zona de evacuacion orbital.").
+% Enlaces
 enlace(puente_mando, laboratorio).
-enlace(puente_mando, enfermeria).
 enlace(laboratorio, modulo_energia).
-enlace(modulo_energia, modulo_escape).
-
-artefacto(fusible, laboratorio).
+enlace(puente_mando, enfermeria).
+enlace(enfermeria, modulo_escape).
+% Artefactos
 artefacto(traje_espacial, enfermeria).
+artefacto(fusible, laboratorio).
 artefacto(tarjeta_seguridad, puente_mando).
-
-% necesita(Modulo, Artefacto).
+% Sistemas
+sistema(modulo_energia,energia,[fusible],fallo).
+sistema(laboratorio,comunicaciones,[ fusible ,traje_espacial],fallo).
+% Tripulantes
+tripulante(elena, modulo_energia, [energia], atrapado).
+tripulante(kai, enfermeria, [energia], atrapado).
+% Restricciones de acceso
 necesita(modulo_energia, traje_espacial).
-
-% pasoPrevio(Modulo, ModuloNecesario).
-pasoPrevio(modulo_escape, modulo_energia).
-
-
-% necesitaEstado(Modulo, Sistema, Estado).
+necesita(modulo_escape, tarjeta_seguridad).
+% Restricciones de estado
 necesitaEstado(modulo_escape, energia, restaurado).
-
-
-% sistema(Modulo, NombreSistema, ArtefactosNecesarios, EstadoInicial).
-sistema(modulo_energia, energia, [fusible], fallo).
-sistema(laboratorio, comunicaciones, [tarjeta_seguridad], fallo).
-
-
-tripulante(elena, laboratorio, [energia], atrapado).
-
-objetivo_reparar(energia).
-objetivo_rescatar(elena).
+% Restricciones por pasos previos
+pasoPrevio(modulo_escape, modulo_energia).
+%condiciones de gane
+objetivoS(energia, restaurado).
+objetivoS(comunicaciones, restaurado).
+objetivoT(elena, rescatado).
+% Estado inicial
+jugador(puente_mando).
+artefactosLogrados([]).
