@@ -29,8 +29,7 @@ sistema(modulo_energia, energia, [fusible], fallo).
 sistema(laboratorio, comunicaciones, [tarjeta_seguridad], fallo).
 
 
-tripulante(elena, enfermeria).
-tripulante(carlos, laboratorio).
+tripulante(elena, laboratorio, [energia], atrapado).
 
 objetivo_reparar(energia).
 objetivo_rescatar(elena).

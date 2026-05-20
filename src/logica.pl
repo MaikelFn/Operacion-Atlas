@@ -6,10 +6,15 @@
 :- dynamic inventario/1.
 :- dynamic visitados/1.
 :- dynamic sistemas_reparados/1.
+:- dynamic tripulantes_rescatados/1.
+:- dynamic usados/1.
 
-jugador(modulo_energia).
-inventario([fusible]).
+jugador(any).
+inventario([]).
+visitados([any]).
 sistemas_reparados([]).
+tripulantes_rescatados([]).
+usados([]).
 
 % Relacion de conectividad entre modulos, considerando ambos sentidos.
 esta_conectado(X, Y) :-
@@ -22,10 +27,14 @@ tiene(Artefacto) :-
     inventario(Lista),
     member(Artefacto, Lista).
 
+uso(Artefacto) :-
+    usados(Lista),
+    member(Artefacto, Lista).
+
 % Verifica si el modulo cumple la condicion de artefacto requerido.
 cumple_requisito_artefacto(Modulo) :-
     necesita(Modulo, Artefacto),
-    tiene(Artefacto).
+    uso(Artefacto).
 cumple_requisito_artefacto(Modulo) :-
     \+ necesita(Modulo, _).
 
@@ -72,7 +81,8 @@ registrar_sistema_reparado(Sistema) :-
     assertz(sistemas_reparados([Sistema | Lista])).
 
 % Determina si el jugador puede moverse de un origen a un destino.
-puedo_ir(Origen, Destino) :-
+puedo_ir(Destino) :-
+    jugador(Origen),
     Origen \= Destino,
     modulo(Destino),
     esta_conectado(Origen, Destino),
@@ -82,8 +92,8 @@ puedo_ir(Origen, Destino) :-
 
 % Mueve al jugador si la ruta es valida y registra la visita.
 mover(Destino) :-
+    puedo_ir(Destino),
     jugador(Actual),
-    puedo_ir(Actual, Destino),
     retract(jugador(Actual)),
     assertz(jugador(Destino)),
     registrar_visita(Destino).
@@ -99,7 +109,7 @@ tomar(Artefacto) :-
 
 tiene_todos([]).
 tiene_todos([Cabeza | Cola]) :-
-    tiene(Cabeza), tiene_todos(Cola).
+    uso(Cabeza), tiene_todos(Cola).
 
 % Repara un sistema si el jugador cumple todos los requisitos.
 reparar(Sistema) :-
@@ -108,3 +118,42 @@ reparar(Sistema) :-
     \+ esta_reparado(Sistema),
     tiene_todos(Artefactos),
     registrar_sistema_reparado(Sistema).
+
+esta_rescatado(Tripulante) :-
+    tripulantes_rescatados(Lista),
+    member(Tripulante, Lista).
+
+registrar_rescate(Tripulante) :-
+    tripulantes_rescatados(Lista),
+    member(Tripulante, Lista),!.
+registrar_rescate(Tripulante) :-
+    tripulantes_rescatados(Lista),
+    retract(tripulantes_rescatados(Lista)),
+    assertz(tripulantes_rescatados([Tripulante | Lista])).
+
+sistemas_funcionando([]).
+sistemas_funcionando([Cabeza | Cola]) :-
+    esta_reparado(Cabeza),sistemas_funcionando(Cola).
+
+rescatar(Tripulante) :-
+    jugador(ModuloActual),
+    tripulante(Tripulante, ModuloActual, SistemasNecesarios, atrapado),
+    \+ esta_rescatado(Tripulante),
+    sistemas_funcionando(SistemasNecesarios),
+    registrar_rescate(Tripulante).
+
+donde_esta(Artefacto, Modulo) :-
+    artefacto(Artefacto, Modulo).
+
+que_tengo(Lista) :-
+    inventario(Lista).
+
+modulos_visitados(Lista) :-
+    visitados(Lista).
+
+usar(Artefacto) :-
+    tiene(Artefacto),
+    \+ uso(Artefacto),
+    usados(Lista),
+    retract(usados(Lista)),
+    assertz(usados([Artefacto | Lista])).
