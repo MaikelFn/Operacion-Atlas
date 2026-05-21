@@ -39,6 +39,24 @@ esta_conectado(X, Y) :-
     enlace(Y, X).
 
 % =========================================
+% RUTAS ENTRE MODULOS
+% =========================================
+
+% Devuelve en Ruta la lista de modulos desde Inicio hasta Destino.
+ruta(Inicio, Destino, Ruta) :-
+    ruta_aux(Inicio, Destino, [Inicio], Ruta).
+
+% Caso base: cuando el nodo actual es el destino.
+ruta_aux(Destino, Destino, Visitados, Visitados).
+
+% Paso recursivo: explorar vecinos no visitados.
+ruta_aux(Actual, Destino, Visitados, Ruta) :-
+    esta_conectado(Actual, Siguiente),
+    \+ member(Siguiente, Visitados),
+    append(Visitados, [Siguiente], Visitados2),
+    ruta_aux(Siguiente, Destino, Visitados2, Ruta).
+
+% =========================================
 % ARTEFACTOS LOGRADOS Y USO DE ARTEFACTOS
 % =========================================
 
