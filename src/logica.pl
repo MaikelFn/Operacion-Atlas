@@ -1,8 +1,4 @@
 % =========================================
-% CARGA DE BASE DE CONOCIMIENTO
-% =========================================
-
-% =========================================
 % ESTADO DINAMICO DEL JUEGO
 % =========================================
 
@@ -13,6 +9,7 @@
 :- dynamic visitados/1.
 :- dynamic usados/1.
 :- dynamic tripulantes_rescatados/1.
+:- dynamic sistemas_reparados/1.
 
 :- consult('conocimiento.pl').
 
@@ -24,6 +21,7 @@
 visitados([]).
 usados([]).
 tripulantes_rescatados([]).
+sistemas_reparados([]).
 
 inicializar_juego :-
     jugador(ModuloInicial),
@@ -125,6 +123,17 @@ registrar_rescate(Tripulante) :-
     retract(tripulantes_rescatados(Lista)),
     assertz(tripulantes_rescatados([Tripulante | Lista])).
 
+% Registra sistema reparado.
+registrar_reparacion(Sistema) :-
+    sistemas_reparados(Lista),
+    member(Sistema, Lista),
+    !.
+
+registrar_reparacion(Sistema) :-
+    sistemas_reparados(Lista),
+    retract(sistemas_reparados(Lista)),
+    assertz(sistemas_reparados([Sistema | Lista])).
+
 % =========================================
 % MOVIMIENTO
 % =========================================
@@ -197,6 +206,8 @@ reparar(Sistema) :-
             restaurado
         )
     ).
+
+    registrar_reparacion(Sistema).
 
 % =========================================
 % RESCATE DE TRIPULANTES
