@@ -44,6 +44,70 @@ panel_izquierdo = tk.Frame(frame_juego, bg=e.BG, width=170)
 panel_izquierdo.pack(side="left", fill="y", padx=(12, 8), pady=12)
 panel_izquierdo.pack_propagate(False)
 
+texto_estado = tk.Text(
+    panel_izquierdo,
+    bg=e.BG,
+    fg=e.FG,
+    relief="flat",
+    bd=0,
+    wrap="word",
+    height=24,
+    width=22,
+    font=e.FONT,
+    highlightthickness=0,
+    cursor="arrow",
+)
+scroll_estado = tk.Scrollbar(panel_izquierdo, command=texto_estado.yview)
+texto_estado.configure(yscrollcommand=scroll_estado.set)
+texto_estado.pack(side="left", fill="both", expand=True)
+scroll_estado.pack(side="right", fill="y")
+
+def limpiar_panel_izquierdo():
+    texto_estado.config(state="normal")
+    texto_estado.delete("1.0", "end")
+
+
+def _formatear_lista(titulo, elementos, vacio="Ninguno"):
+    lineas = [titulo]
+    if elementos:
+        for elemento in elementos:
+            lineas.append(f"- {elemento}")
+    else:
+        lineas.append(f"- {vacio}")
+    return lineas
+
+
+def actualizar_panel_izquierdo():
+    limpiar_panel_izquierdo()
+    estado = li.obtener_estado_jugador()
+
+    lineas = [
+        "ESTADO",
+        f"Ubicacion: {estado['ubicacion']}",
+        f"Descripcion: {estado['descripcion_modulo']}",
+        "",
+    ]
+    lineas.extend(_formatear_lista("Artefactos", estado["artefactos"]))
+    lineas.append("")
+    lineas.extend(_formatear_lista("Usados", estado["artefactos_usados"]))
+    lineas.append("")
+    lineas.append("Sistemas en falla")
+    if estado["sistemas_en_falla"]:
+        for sistema in estado["sistemas_en_falla"]:
+            lineas.append(f"- {sistema['sistema']} ({sistema['modulo']})")
+    else:
+        lineas.append("- Ninguno")
+    lineas.append("")
+    lineas.append("Tripulantes atrapados")
+    if estado["tripulantes_atrapados"]:
+        for tripulante in estado["tripulantes_atrapados"]:
+            lineas.append(f"- {tripulante['nombre']} ({tripulante['modulo']})")
+    else:
+        lineas.append("- Ninguno")
+
+    texto_estado.insert("1.0", "\n".join(lineas))
+    texto_estado.config(state="disabled")
+
 # Lado derecho: secciones de botones
 panel_derecho = tk.Frame(frame_juego, bg=e.BG)
 panel_derecho.pack(side="left", fill="both", expand=True, padx=(8, 12), pady=12)
@@ -90,6 +154,9 @@ tk.Button(contenido_derecho, text="Volver", width=12, command=li.ir_a_menu,
 # Pasar referencias a li para navegación
 li.frame_menu = frame_menu
 li.frame_juego = frame_juego
+
+# Cargar estado inicial del panel izquierdo
+actualizar_panel_izquierdo()
 
 # Mostrar menú inicial
 li.mostrar_frame(frame_menu)

@@ -32,4 +32,4 @@ objetivoS(comunicaciones, restaurado).
 objetivoT(elena, rescatado).
 % Estado inicial
 jugador(puente_mando).
-artefactosLogrados([]).
+artefactosLogrados([tarjeta_seguridad]).
