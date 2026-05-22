@@ -2,142 +2,96 @@ import tkinter as tk
 import estilos as e
 import logica_interfaz as li
 
-# =========================================
-# VENTANA PRINCIPAL
-# =========================================
-
+# Ventana principal mínima — menú inicial
 ventana = tk.Tk()
 ventana.title("Operacion Atlas")
 ventana.geometry("620x400")
 ventana.resizable(False, False)
 ventana.configure(bg=e.BG)
 
-# =========================================
-# FRAME: MENU PRINCIPAL
-# =========================================
-
 frame_menu = tk.Frame(ventana, bg=e.BG)
 
 tk.Label(frame_menu, text="OPERACION",
-         font=("Courier", 13, "bold"), **e.estilo_label(fg=e.FG_DIM)).pack()
+         **e.estilo_label(fg=e.FG_DIM, font=("Courier", 13, "bold"))).pack()
 
 tk.Label(frame_menu, text="ATLAS",
-         font=e.FONT_XL, **e.estilo_label(fg=e.BTN_FG)).pack()
+         **e.estilo_label(fg=e.BTN_FG, font=e.FONT_XL)).pack()
 
 tk.Label(frame_menu, text="Restaura la estacion. Rescata a la tripulacion.",
          **e.estilo_label(fg=e.FG_DIM)).pack(pady=(2, 28))
 
-tk.Button(frame_menu, text="Jugar", font=e.FONT_LG,
-          width=18, pady=8,
+tk.Button(frame_menu, text="Jugar", width=18, pady=8,
           command=li.ir_a_jugar,
           **e.estilo_boton()).pack(pady=5)
 
-tk.Button(frame_menu, text="Salir", font=e.FONT_LG,
-          width=18, pady=8,
-          command=lambda: li.salir(ventana),
+tk.Button(frame_menu, text="Salir", width=18, pady=8,
+          command=ventana.destroy,
           **e.estilo_boton(color_fg=e.COLOR_ROJO)).pack(pady=5)
 
-tk.Label(frame_menu, text="IC-4700  TEC  2026",
-         font=e.FONT_SM, **e.estilo_label(fg="#1e3a55")).pack(pady=(24, 0))
+frame_menu.place(relx=0.5, rely=0.5, anchor="center")
 
-# =========================================
-# FRAME: SUBMENU JUGAR
-# =========================================
+# ==========================
+# FRAME: JUEGO PRINCIPAL
+# ==========================
 
-frame_jugar = tk.Frame(ventana, bg=e.BG)
+frame_juego = tk.Frame(ventana, bg=e.BG)
+frame_juego.config(width=620, height=400)
 
-tk.Label(frame_jugar, text="Seleccionar modo de juego",
-         font=e.FONT_LG, **e.estilo_label()).pack(pady=(0, 24))
+frame_juego.pack_propagate(False)
 
-tk.Button(frame_jugar, text="Nuevo Juego", font=e.FONT_LG,
-          width=20, pady=8,
-          command=li.ir_a_partida,
-          **e.estilo_boton(color_fg=e.COLOR_VERDE)).pack(pady=5)
+# Lado izquierdo: estado y destinos
+panel_izquierdo = tk.Frame(frame_juego, bg=e.BG, width=170)
+panel_izquierdo.pack(side="left", fill="y", padx=(12, 8), pady=12)
+panel_izquierdo.pack_propagate(False)
 
-tk.Label(frame_jugar, text="Inicia una nueva partida desde el principio",
-         font=e.FONT_SM, **e.estilo_label(fg=e.FG_DIM)).pack(pady=(0, 12))
+# Lado derecho: secciones de botones
+panel_derecho = tk.Frame(frame_juego, bg=e.BG)
+panel_derecho.pack(side="left", fill="both", expand=True, padx=(8, 12), pady=12)
 
-tk.Button(frame_jugar, text="Reproducir Partida", font=e.FONT_LG,
-          width=20, pady=8,
-          command=li.reproducir_partida,
-          **e.estilo_boton(color_fg=e.COLOR_AMARILLO)).pack(pady=5)
+contenido_derecho = tk.Frame(panel_derecho, bg=e.BG)
+contenido_derecho.pack(expand=True)
 
-tk.Label(frame_jugar, text="Repetir los pasos de una partida guardada",
-         font=e.FONT_SM, **e.estilo_label(fg=e.FG_DIM)).pack(pady=(0, 20))
+def crear_seccion(titulo):
+    marco = tk.Frame(contenido_derecho, bg=e.BG)
+    marco.pack(fill="x", pady=(0, 10))
+    tk.Label(marco, text=titulo, **e.estilo_label(fg=e.FG_DIM, font=e.FONT_SM)).pack(anchor="w", pady=(0, 4))
+    return marco
 
-tk.Button(frame_jugar, text="Volver", font=e.FONT,
-          width=14, pady=6,
-          command=li.ir_a_menu,
-          **e.estilo_boton(color_fg=e.FG_DIM)).pack()
+movimiento = crear_seccion("MOVIMIENTO")
+fila_mov = tk.Frame(movimiento, bg=e.BG)
+fila_mov.pack(anchor="w")
+tk.Button(fila_mov, text="Mover", width=12, command=lambda: None, **e.estilo_boton()).grid(row=0, column=0, padx=(0, 8))
+tk.Button(fila_mov, text="Ver ruta", width=12, command=lambda: None, **e.estilo_boton()).grid(row=0, column=1)
 
-# =========================================
-# FRAME: PARTIDA (VERIFICAR RUTA)
-# =========================================
+artefactos = crear_seccion("ARTEFACTOS")
+fila_art = tk.Frame(artefactos, bg=e.BG)
+fila_art.pack(anchor="w")
+tk.Button(fila_art, text="Tomar", width=10, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_VERDE)).grid(row=0, column=0, padx=(0, 8), pady=2)
+tk.Button(fila_art, text="Usar", width=10, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_VERDE)).grid(row=0, column=1, padx=(0, 8), pady=2)
+tk.Button(fila_art, text="Donde esta", width=12, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_VERDE)).grid(row=0, column=2, padx=(0, 8), pady=2)
+tk.Button(fila_art, text="Que tengo", width=12, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_VERDE)).grid(row=0, column=3, pady=2)
 
-frame_partida = tk.Frame(ventana, bg=e.BG)
+sistemas = crear_seccion("SISTEMAS Y TRIPULACION")
+fila_sys = tk.Frame(sistemas, bg=e.BG)
+fila_sys.pack(anchor="w")
+tk.Button(fila_sys, text="Reparar sistema", width=16, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_AMARILLO)).grid(row=0, column=0, padx=(0, 8), pady=2)
+tk.Button(fila_sys, text="Rescatar tripulante", width=18, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_AMARILLO)).grid(row=0, column=1, pady=2)
 
-# --- Panel izquierdo: info del jugador ---
-panel_izq = tk.Frame(frame_partida, bg=e.BG, width=160)
-panel_izq.pack(side="left", fill="y", padx=(0, 20), pady=10)
-panel_izq.pack_propagate(False)
+estado = crear_seccion("ESTADO Y VICTORIA")
+fila_estado = tk.Frame(estado, bg=e.BG)
+fila_estado.pack(anchor="w")
+tk.Button(fila_estado, text="Modulos visitados", width=16, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_AZUL)).grid(row=0, column=0, padx=(0, 8), pady=2)
+tk.Button(fila_estado, text="Como gano", width=12, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_AZUL)).grid(row=0, column=1, padx=(0, 8), pady=2)
+tk.Button(fila_estado, text="Verificar victoria", width=16, command=lambda: None, **e.estilo_boton(color_fg=e.COLOR_AZUL)).grid(row=0, column=2, pady=2)
 
-ubicacion_label = tk.Label(
-    panel_izq,
-    text="Ubicacion actual:\n—",
-    justify="left",
-    wraplength=140,
-    anchor="nw",
-    **e.estilo_label()
-)
-ubicacion_label.pack(anchor="nw", pady=(10, 0))
+tk.Button(contenido_derecho, text="Volver", width=12, command=li.ir_a_menu,
+          **e.estilo_boton(color_fg=e.FG_DIM)).pack(anchor="w", pady=(2, 0))
 
-# --- Panel derecho: formulario ---
-panel_der = tk.Frame(frame_partida, bg=e.BG)
-panel_der.pack(side="left", fill="both", expand=True)
+# Pasar referencias a li para navegación
+li.frame_menu = frame_menu
+li.frame_juego = frame_juego
 
-tk.Label(panel_der, text="OPERACION ATLAS",
-         font=e.FONT_LG, **e.estilo_label(fg=e.BTN_FG)).pack(pady=(0, 16))
-
-tk.Label(panel_der, text="Origen", **e.estilo_label()).pack()
-entrada_origen = tk.Entry(panel_der, font=e.FONT, width=26,
-                          **e.estilo_input())
-entrada_origen.pack(pady=(2, 12), ipady=5)
-
-tk.Label(panel_der, text="Destino", **e.estilo_label()).pack()
-entrada_destino = tk.Entry(panel_der, font=e.FONT, width=26,
-                           **e.estilo_input())
-entrada_destino.pack(pady=(2, 16), ipady=5)
-
-tk.Button(panel_der, text="Verificar Ruta", font=e.FONT_LG,
-          width=18, pady=8,
-          command=li.verificar_movimiento,
-          **e.estilo_boton()).pack(pady=4)
-
-resultado_label = tk.Label(panel_der, text="", font=e.FONT_LG,
-                            **e.estilo_label())
-resultado_label.pack(pady=8)
-
-tk.Button(panel_der, text="Volver", font=e.FONT,
-          width=14, pady=6,
-          command=li.ir_a_jugar,
-          **e.estilo_boton(color_fg=e.FG_DIM)).pack()
-
-# =========================================
-# PASAR REFERENCIAS A logica_interfaz
-# =========================================
-
-li.frame_activo   = None
-li.frame_menu     = frame_menu
-li.frame_jugar    = frame_jugar
-li.frame_partida  = frame_partida
-li.ubicacion_label = ubicacion_label
-li.resultado_label = resultado_label
-li.entrada_origen  = entrada_origen
-li.entrada_destino = entrada_destino
-
-# =========================================
-# INICIAR
-# =========================================
-
+# Mostrar menú inicial
 li.mostrar_frame(frame_menu)
+
 ventana.mainloop()
