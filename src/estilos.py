@@ -13,14 +13,14 @@ COLOR_VERDE   = "#4ddbaa"
 COLOR_AMARILLO= "#f0c040"
 COLOR_AZUL    = "#7aaeff"
 
-# Fuentes
+# Fuentes ajustadas
 FONT    = ("Courier", 11)
 FONT_LG = ("Courier", 13, "bold")
-FONT_XL = ("Courier", 42, "bold")
+FONT_XL = ("Courier", 36, "bold")   # Más grande para menú
 FONT_SM = ("Courier", 9)
 
 # =========================================
-# Helpers para aplicar estilos
+# Helpers
 # =========================================
 
 def estilo_boton(color_fg=None):
@@ -32,18 +32,8 @@ def estilo_boton(color_fg=None):
         "relief":          "flat",
         "bd":              0,
         "cursor":          "hand2",
-    }
-
-def estilo_input():
-    return {
-        "bg":                BTN_BG,
-        "fg":                FG,
-        "insertbackground":  FG,
-        "relief":            "flat",
-        "bd":                0,
-        "highlightthickness": 1,
-        "highlightbackground": FG_DIM,
-        "highlightcolor":    BTN_FG,
+        "font":            FONT_LG,
+        "width":           22,
     }
 
 def estilo_label(fg=None, font=None):
