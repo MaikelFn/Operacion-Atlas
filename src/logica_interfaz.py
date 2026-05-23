@@ -155,7 +155,22 @@ def modulos_visitados():
 
 
 def ruta(inicio, fin):
-    pass
+    if not inicio or not fin:
+        return []
+    resultado = consultar_uno(f"ruta({inicio},{fin},Ruta)") or {}
+    ruta_prolog = resultado.get("Ruta") if resultado else None
+    return lista_a_texto(ruta_prolog)
+
+
+def obtener_modulos():
+    modulos = []
+    vistos = set()
+    for resultado in consultar_todos("modulo(M, _)"):
+        m = str(resultado.get("M") or "")
+        if m and m not in vistos:
+            vistos.add(m)
+            modulos.append(m)
+    return modulos
 
 
 def como_gano():
@@ -171,4 +186,6 @@ __all__ = [
     "obtener_destinos_disponibles",
     "puedo_ir",
     "mover",
+    "ruta",
+    "obtener_modulos",
 ]

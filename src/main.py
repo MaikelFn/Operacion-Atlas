@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import estilos as estilos
 import logica_interfaz as logica_interfaz
 
@@ -10,34 +10,39 @@ ventana.geometry("900x550")
 ventana.resizable(False, False)
 ventana.configure(bg=estilos.BG)
 
-# ==========================
-# FRAME: MENU PRINCIPAL
-# ==========================
+# ========================== MENU PRINCIPAL (se construye al abrirse) ==========================
 
-frame_menu = tk.Frame(ventana, bg=estilos.BG)
+frame_menu = None
 
-tk.Label(frame_menu, text="OPERACION",
-         **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 16, "bold"))).pack(pady=(60, 0))
+def construir_frame_menu():
+    frame = tk.Frame(ventana, bg=estilos.BG)
+    tk.Label(frame, text="OPERACION",
+             **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 16, "bold"))).pack(pady=(60, 0))
 
-tk.Label(frame_menu, text="ATLAS",
-         **estilos.estilo_label(fg=estilos.BTN_FG, font=estilos.FONT_XL)).pack(pady=(0, 12))
+    tk.Label(frame, text="ATLAS",
+             **estilos.estilo_label(fg=estilos.BTN_FG, font=estilos.FONT_XL)).pack(pady=(0, 12))
 
-tk.Label(frame_menu, text="Restaura la estacion. Rescata a la tripulacion.",
-         **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11))).pack(pady=(0, 50))
+    tk.Label(frame, text="Restaura la estacion. Rescata a la tripulacion.",
+             **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11))).pack(pady=(0, 50))
 
-tk.Button(frame_menu, text="JUGAR", pady=16,
-          command=lambda: abrir_juego_actualizado(),
-          **estilos.estilo_boton()).pack(pady=10)
+    tk.Button(frame, text="JUGAR", pady=16,
+              command=lambda: abrir_juego_actualizado(),
+              **estilos.estilo_boton()).pack(pady=10)
 
-tk.Button(frame_menu, text="SALIR", pady=16,
-          command=ventana.destroy,
-          **estilos.estilo_boton(color_fg=estilos.COLOR_ROJO)).pack(pady=10)
+    tk.Button(frame, text="SALIR", pady=16,
+              command=ventana.destroy,
+              **estilos.estilo_boton(color_fg=estilos.COLOR_ROJO)).pack(pady=10)
 
-frame_menu.place(relx=0.5, rely=0.5, anchor="center")
+    return frame
 
-# ==========================
-# FRAME: JUEGO PRINCIPAL
-# ==========================
+
+def abrir_menu():
+    global frame_menu
+    frame_menu = construir_frame_menu()
+    logica_interfaz.frame_menu = frame_menu
+    logica_interfaz.mostrar_frame(frame_menu)
+
+# ========================== FRAME: JUEGO PRINCIPAL ==========================
 
 frame_juego = tk.Frame(ventana, bg=estilos.BG)
 frame_juego.config(width=900, height=550)
@@ -46,6 +51,58 @@ frame_juego.pack_propagate(False)
 frame_mover = tk.Frame(ventana, bg=estilos.BG)
 frame_mover.config(width=900, height=550)
 frame_mover.pack_propagate(False)
+
+# ==================== FRAME: RUTA (persistente) ====================
+frame_ruta = tk.Frame(ventana, bg=estilos.BG)
+frame_ruta.config(width=900, height=550)
+frame_ruta.pack_propagate(False)
+
+cont_ruta = tk.Frame(frame_ruta, bg=estilos.BG)
+cont_ruta.pack(fill="both", expand=True, padx=18, pady=16)
+
+panel_left_r = tk.Frame(cont_ruta, bg=estilos.BG, width=430)
+panel_left_r.pack(side="left", fill="both", expand=True, padx=(0, 14))
+panel_left_r.pack_propagate(False)
+
+tk.Label(
+    panel_left_r,
+    text="VER RUTA",
+    **estilos.estilo_label(fg=estilos.BTN_FG, font=("Courier", 18, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+panel_right_r = tk.Frame(cont_ruta, bg=estilos.BG, width=300)
+panel_right_r.pack(side="left", fill="y")
+panel_right_r.pack_propagate(False)
+
+tk.Label(panel_right_r, text="Inicio", **estilos.estilo_label(fg=estilos.FG_DIM)).pack(anchor="w", pady=(6, 2))
+cb_inicio = ttk.Combobox(panel_right_r, values=logica_interfaz.obtener_modulos(), state="readonly")
+cb_inicio.pack(anchor="w", pady=(0, 8))
+
+tk.Label(panel_right_r, text="Destino", **estilos.estilo_label(fg=estilos.FG_DIM)).pack(anchor="w", pady=(6, 2))
+cb_destino = ttk.Combobox(panel_right_r, values=logica_interfaz.obtener_modulos(), state="readonly")
+cb_destino.pack(anchor="w", pady=(0, 8))
+
+resultado_txt = tk.Text(panel_right_r, height=10, width=30, bg=estilos.BG, fg=estilos.FG, relief="flat")
+resultado_txt.pack(anchor="w", pady=(10, 8))
+resultado_txt.config(state="disabled")
+
+def mostrar_ruta_action():
+    inicio = cb_inicio.get().strip()
+    destino = cb_destino.get().strip()
+    if not inicio or not destino:
+        messagebox.showwarning("Ruta", "Selecciona inicio y destino.")
+        return
+    ruta = logica_interfaz.ruta(inicio, destino)
+    resultado_txt.config(state="normal")
+    resultado_txt.delete("1.0", "end")
+    if ruta:
+        resultado_txt.insert("end", " -> ".join(ruta))
+    else:
+        resultado_txt.insert("end", "No existe ruta entre los modulos seleccionados.")
+    resultado_txt.config(state="disabled")
+
+tk.Button(panel_right_r, text="Mostrar ruta", pady=10, command=mostrar_ruta_action, **estilos.estilo_boton()).pack(anchor="w", pady=(6, 6))
+tk.Button(panel_right_r, text="VOLVER", pady=10, command=lambda: logica_interfaz.ir_a_jugar(), **estilos.estilo_boton(color_fg=estilos.FG_DIM)).pack(anchor="w")
 
 # ==================== PANEL IZQUIERDO ====================
 panel_izquierdo = tk.Frame(frame_juego, bg=estilos.BG, width=312)
@@ -202,6 +259,22 @@ def abrir_pantalla_mover():
     logica_interfaz.ir_a_mover()
 
 
+def abrir_pantalla_ruta():
+    actualizar_panel_izquierdo()
+    try:
+        modulos = logica_interfaz.obtener_modulos()
+        cb_inicio['values'] = modulos
+        cb_destino['values'] = modulos
+        cb_inicio.set('')
+        cb_destino.set('')
+        resultado_txt.config(state='normal')
+        resultado_txt.delete('1.0', 'end')
+        resultado_txt.config(state='disabled')
+    except Exception:
+        pass
+    logica_interfaz.mostrar_frame(frame_ruta)
+
+
 def ejecutar_movimiento():
     destino = seleccion_destino_var.get().strip()
     if not destino:
@@ -229,7 +302,7 @@ movimiento = crear_seccion("MOVIMIENTO")
 fila_mov = tk.Frame(movimiento, bg=estilos.BG)
 fila_mov.pack(anchor="w")
 tk.Button(fila_mov, text="Mover", pady=9, command=abrir_pantalla_mover, **estilos.estilo_boton()).grid(row=0, column=0, padx=(0, 8))
-tk.Button(fila_mov, text="Ver ruta", pady=9, command=lambda: None, **estilos.estilo_boton()).grid(row=0, column=1)
+tk.Button(fila_mov, text="Ver ruta", pady=9, command=abrir_pantalla_ruta, **estilos.estilo_boton()).grid(row=0, column=1)
 
 # ARTEFACTOS
 artefactos = crear_seccion("ARTEFACTOS")
@@ -326,7 +399,8 @@ tk.Button(
 logica_interfaz.frame_menu = frame_menu
 logica_interfaz.frame_juego = frame_juego
 logica_interfaz.frame_mover = frame_mover
+logica_interfaz.frame_ruta = frame_ruta
 actualizar_panel_izquierdo()
-logica_interfaz.mostrar_frame(frame_menu)
+abrir_menu()
 
 ventana.mainloop()
