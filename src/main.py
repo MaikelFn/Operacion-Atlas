@@ -48,7 +48,6 @@ def abrir_menu():
 # ==========================
 # FRAME: JUEGO PRINCIPAL
 # ==========================
-
 frame_juego = tk.Frame(ventana, bg=estilos.BG)
 frame_juego.config(width=900, height=550)
 frame_juego.pack_propagate(False)
@@ -73,12 +72,14 @@ frame_inventario = tk.Frame(ventana, bg=estilos.BG)
 frame_inventario.config(width=900, height=550)
 frame_inventario.pack_propagate(False)
 
+frame_reparar = tk.Frame(ventana, bg=estilos.BG)
+frame_reparar.config(width=900, height=550)
+frame_reparar.pack_propagate(False)
+
 # ==================== FRAME: RUTA (persistente)
 frame_ruta = tk.Frame(ventana, bg=estilos.BG)
 frame_ruta.config(width=900, height=550)
 frame_ruta.pack_propagate(False)
-
-# Construir contenido de frame_ruta
 cont_ruta = tk.Frame(frame_ruta, bg=estilos.BG)
 cont_ruta.pack(fill="both", expand=True, padx=18, pady=16)
 
@@ -244,6 +245,9 @@ seleccion_donde_var = tk.StringVar(value="")
 ubicacion_donde_var = tk.StringVar(value="")
 seleccion_inventario_var = tk.StringVar(value="")
 detalle_inventario_var = tk.StringVar(value="")
+seleccion_sistema_reparar_var = tk.StringVar(value="")
+seleccion_artefacto_reparar_var = tk.StringVar(value="")
+origen_reparar_var = tk.StringVar(value="")
 
 
 def limpiar_destinos():
@@ -291,17 +295,19 @@ def abrir_pantalla_mover():
 def abrir_pantalla_ruta():
     actualizar_panel_izquierdo()
     # Refrescar valores de combobox y limpiar resultado
-    try:
-        modulos = logica_interfaz.obtener_modulos()
-        cb_inicio['values'] = modulos
-        cb_destino['values'] = modulos
-        cb_inicio.set('')
-        cb_destino.set('')
-        resultado_txt.config(state='normal')
-        resultado_txt.delete('1.0', 'end')
-        resultado_txt.config(state='disabled')
-    except Exception:
-        pass
+    if hasattr(logica_interfaz, 'obtener_modulos'):
+        modulos = logica_interfaz.obtener_modulos() or []
+        try:
+            cb_inicio['values'] = modulos
+            cb_destino['values'] = modulos
+            cb_inicio.set('')
+            cb_destino.set('')
+            resultado_txt.config(state='normal')
+            resultado_txt.delete('1.0', 'end')
+            resultado_txt.config(state='disabled')
+        except Exception:
+            # Si el widget combobox no está inicializado correctamente, ignorar configuración
+            pass
 
     logica_interfaz.mostrar_frame(frame_ruta)
 
@@ -508,6 +514,12 @@ def abrir_pantalla_inventario():
     logica_interfaz.ir_a_inventario()
 
 
+def abrir_pantalla_reparar():
+    actualizar_panel_izquierdo()
+    actualizar_sistemas_reparar()
+    logica_interfaz.mostrar_frame(frame_reparar)
+
+
 def ejecutar_usar():
     artefacto = seleccion_uso_var.get().strip()
     if not artefacto:
@@ -541,7 +553,7 @@ tk.Button(fila_art, text="Inventario", pady=8, command=abrir_pantalla_inventario
 sistemas = crear_seccion("SISTEMAS Y TRIPULACIÓN")
 fila_sys = tk.Frame(sistemas, bg=estilos.BG)
 fila_sys.pack(anchor="w")
-tk.Button(fila_sys, text="Reparar", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=0, padx=(0, 8), pady=4)
+tk.Button(fila_sys, text="Reparar", pady=8, command=abrir_pantalla_reparar, **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=0, padx=(0, 8), pady=4)
 tk.Button(fila_sys, text="Rescatar", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=1, padx=(0, 8), pady=4)
 
 # ESTADO Y VICTORIA
@@ -858,6 +870,141 @@ tk.Button(
     command=volver_al_juego,
     **estilos.estilo_boton(color_fg=estilos.FG_DIM),
 ).pack(anchor="w")
+
+# ==================== FRAME: REPARAR SISTEMA ====================
+contenedor_reparar = tk.Frame(frame_reparar, bg=estilos.BG)
+contenedor_reparar.pack(fill="both", expand=True, padx=18, pady=16)
+
+panel_reparar = tk.Frame(contenedor_reparar, bg=estilos.BG, width=430)
+panel_reparar.pack(side="left", fill="both", expand=True, padx=(0, 14))
+panel_reparar.pack_propagate(False)
+
+tk.Label(
+    panel_reparar,
+    text="SISTEMAS EN FALLA (MÓDULO ACTUAL)",
+    **estilos.estilo_label(fg=estilos.BTN_FG, font=("Courier", 18, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+lista_reparar_frame = tk.Frame(panel_reparar, bg=estilos.BG)
+lista_reparar_frame.pack(fill="both", expand=True)
+
+panel_detalle_reparar = tk.Frame(contenedor_reparar, bg=estilos.BG, width=300)
+panel_detalle_reparar.pack(side="left", fill="y")
+panel_detalle_reparar.pack_propagate(False)
+
+tk.Label(
+    panel_detalle_reparar,
+    text="SELECCION",
+    **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold")),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Entry(
+    panel_detalle_reparar,
+    textvariable=seleccion_sistema_reparar_var,
+    state="readonly",
+    width=26,
+    font=("Courier", 13),
+    bg=estilos.BTN_BG,
+    fg=estilos.FG,
+    relief="flat",
+    readonlybackground=estilos.BTN_BG,
+    justify="center",
+).pack(anchor="w", pady=(0, 8))
+
+tk.Label(
+    panel_detalle_reparar,
+    text="Artefactos requeridos:",
+    **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "bold")),
+).pack(anchor="w", pady=(8, 4))
+
+lista_artefactos_reparar_frame = tk.Frame(panel_detalle_reparar, bg=estilos.BG)
+lista_artefactos_reparar_frame.pack(fill="both", expand=True)
+
+    
+
+tk.Button(
+    panel_detalle_reparar,
+    text="REPARAR",
+    pady=12,
+    command=lambda: ejecutar_reparacion(),
+    **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Button(
+    panel_detalle_reparar,
+    text="VOLVER AL JUEGO",
+    pady=12,
+    command=volver_al_juego,
+    **estilos.estilo_boton(color_fg=estilos.FG_DIM),
+).pack(anchor="w")
+
+
+def limpiar_reparar():
+    for widget in lista_reparar_frame.winfo_children():
+        widget.destroy()
+    for widget in lista_artefactos_reparar_frame.winfo_children():
+        widget.destroy()
+
+
+def actualizar_sistemas_reparar():
+    limpiar_reparar()
+    seleccion_sistema_reparar_var.set("")
+    seleccion_artefacto_reparar_var.set("")
+
+    sistemas = logica_interfaz.obtener_sistemas_en_fallo()
+    if not sistemas:
+        tk.Label(
+            lista_reparar_frame,
+            text="No hay sistemas a reparar en este módulo.",
+            **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "italic")),
+        ).pack(anchor="w", pady=6)
+        return
+
+    for sys in sistemas:
+        tk.Button(
+            lista_reparar_frame,
+            text=sys,
+            pady=10,
+            command=lambda s=sys: seleccionar_sistema_reparar(s),
+            **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO),
+        ).pack(anchor="w", pady=6)
+
+
+def seleccionar_sistema_reparar(sistema):
+    seleccion_sistema_reparar_var.set(sistema)
+    # mostrar artefactos requeridos
+    for widget in lista_artefactos_reparar_frame.winfo_children():
+        widget.destroy()
+    artefactos = logica_interfaz.obtener_artefactos_requeridos_sistema(sistema)
+    if not artefactos:
+        tk.Label(
+            lista_artefactos_reparar_frame,
+            text="No hay artefactos listados para este sistema.",
+            **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "italic")),
+        ).pack(anchor="w", pady=6)
+        return
+
+    for a in artefactos:
+        tk.Label(
+            lista_artefactos_reparar_frame,
+            text=a,
+            **estilos.estilo_label(fg=estilos.COLOR_VERDE, font=("Courier", 12, "bold")),
+        ).pack(anchor="w", pady=6)
+
+
+def ejecutar_reparacion():
+    sistema = seleccion_sistema_reparar_var.get().strip()
+    if not sistema:
+        messagebox.showwarning("Reparar", "Selecciona primero un sistema.")
+        return
+
+    # Intentar reparar usando la lógica
+    if logica_interfaz.reparar(sistema):
+        actualizar_panel_izquierdo()
+        messagebox.showinfo("Reparar", f"Sistema {sistema} reparado con éxito.")
+        abrir_juego_actualizado()
+    else:
+        messagebox.showerror("Reparar", f"No se pudo reparar {sistema}. Asegúrate de usar los artefactos requeridos.")
 
 # Referencias y estado inicial
 logica_interfaz.frame_menu = frame_menu

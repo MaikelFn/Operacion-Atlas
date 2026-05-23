@@ -141,7 +141,27 @@ def usar(artefacto):
 
 
 def reparar(sistema):
-    pass
+    return consultar_uno(f"reparar({sistema})") is not None
+
+
+def obtener_sistemas_en_fallo():
+    jugador = consultar_uno("jugador(Modulo)") or {}
+    ubicacion = str(jugador.get("Modulo") or "")
+
+    sistemas = []
+    for resultado in consultar_todos(f"sistema({ubicacion}, Sistema, Artefactos, fallo)"):
+        sistema = str(resultado.get("Sistema") or "")
+        if sistema:
+            sistemas.append(sistema)
+    return sistemas
+
+
+def obtener_artefactos_requeridos_sistema(sistema):
+    jugador = consultar_uno("jugador(Modulo)") or {}
+    ubicacion = str(jugador.get("Modulo") or "")
+
+    resultado = consultar_uno(f"sistema({ubicacion},{sistema},Artefactos, fallo)") or {}
+    return lista_a_texto(resultado.get("Artefactos"))
 
 
 def rescatar(tripulante):
@@ -189,8 +209,6 @@ def obtener_artefactos_usables():
 def obtener_artefactos_disponibles():
     jugador = consultar_uno("jugador(Modulo)") or {}
     ubicacion = str(jugador.get("Modulo") or "")
-    if not ubicacion:
-        return []
 
     logrados = set(que_tengo())
     artefactos = []
