@@ -223,8 +223,7 @@ reparar(Sistema) :-
             Artefactos,
             restaurado
         )
-    ).
-
+    ),
     registrar_reparacion(Sistema).
 
 % =========================================

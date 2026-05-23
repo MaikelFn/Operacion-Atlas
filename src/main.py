@@ -10,7 +10,9 @@ ventana.geometry("900x550")
 ventana.resizable(False, False)
 ventana.configure(bg=estilos.BG)
 
-# ========================== MENU PRINCIPAL (se construye al abrirse) ==========================
+# ==========================
+# MENU PRINCIPAL (se construye al abrirse)
+# ==========================
 
 frame_menu = None
 
@@ -22,7 +24,7 @@ def construir_frame_menu():
     tk.Label(frame, text="ATLAS",
              **estilos.estilo_label(fg=estilos.BTN_FG, font=estilos.FONT_XL)).pack(pady=(0, 12))
 
-    tk.Label(frame, text="Restaura la estacion. Rescata a la tripulacion.",
+    tk.Label(frame, text="Restaura la estación. Rescata a la tripulación.",
              **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11))).pack(pady=(0, 50))
 
     tk.Button(frame, text="JUGAR", pady=16,
@@ -39,10 +41,13 @@ def construir_frame_menu():
 def abrir_menu():
     global frame_menu
     frame_menu = construir_frame_menu()
+    # Registrar en el bridge para que logica_interfaz.ir_a_menu() funcione
     logica_interfaz.frame_menu = frame_menu
     logica_interfaz.mostrar_frame(frame_menu)
 
-# ========================== FRAME: JUEGO PRINCIPAL ==========================
+# ==========================
+# FRAME: JUEGO PRINCIPAL
+# ==========================
 
 frame_juego = tk.Frame(ventana, bg=estilos.BG)
 frame_juego.config(width=900, height=550)
@@ -52,11 +57,20 @@ frame_mover = tk.Frame(ventana, bg=estilos.BG)
 frame_mover.config(width=900, height=550)
 frame_mover.pack_propagate(False)
 
-# ==================== FRAME: RUTA (persistente) ====================
+frame_tomar = tk.Frame(ventana, bg=estilos.BG)
+frame_tomar.config(width=900, height=550)
+frame_tomar.pack_propagate(False)
+
+frame_usar = tk.Frame(ventana, bg=estilos.BG)
+frame_usar.config(width=900, height=550)
+frame_usar.pack_propagate(False)
+
+# ==================== FRAME: RUTA (persistente)
 frame_ruta = tk.Frame(ventana, bg=estilos.BG)
 frame_ruta.config(width=900, height=550)
 frame_ruta.pack_propagate(False)
 
+# Construir contenido de frame_ruta
 cont_ruta = tk.Frame(frame_ruta, bg=estilos.BG)
 cont_ruta.pack(fill="both", expand=True, padx=18, pady=16)
 
@@ -96,9 +110,9 @@ def mostrar_ruta_action():
     resultado_txt.config(state="normal")
     resultado_txt.delete("1.0", "end")
     if ruta:
-        resultado_txt.insert("end", " -> ".join(ruta))
+        resultado_txt.insert("end", " → ".join(ruta))
     else:
-        resultado_txt.insert("end", "No existe ruta entre los modulos seleccionados.")
+        resultado_txt.insert("end", "No existe ruta entre los módulos seleccionados.")
     resultado_txt.config(state="disabled")
 
 tk.Button(panel_right_r, text="Mostrar ruta", pady=10, command=mostrar_ruta_action, **estilos.estilo_boton()).pack(anchor="w", pady=(6, 6))
@@ -142,7 +156,6 @@ scroll_estado.pack(side="right", fill="y")
 def limpiar_panel_izquierdo():
     texto_estado.config(state="normal")
     texto_estado.delete("1.0", "end")
-
 
 def actualizar_panel_izquierdo():
     limpiar_panel_izquierdo()
@@ -215,6 +228,10 @@ def crear_seccion(titulo):
 
 seleccion_destino_var = tk.StringVar(value="")
 origen_movimiento_var = tk.StringVar(value="")
+seleccion_artefacto_var = tk.StringVar(value="")
+origen_artefacto_var = tk.StringVar(value="")
+seleccion_uso_var = tk.StringVar(value="")
+origen_uso_var = tk.StringVar(value="")
 
 
 def limpiar_destinos():
@@ -261,6 +278,7 @@ def abrir_pantalla_mover():
 
 def abrir_pantalla_ruta():
     actualizar_panel_izquierdo()
+    # Refrescar valores de combobox y limpiar resultado
     try:
         modulos = logica_interfaz.obtener_modulos()
         cb_inicio['values'] = modulos
@@ -272,6 +290,7 @@ def abrir_pantalla_ruta():
         resultado_txt.config(state='disabled')
     except Exception:
         pass
+
     logica_interfaz.mostrar_frame(frame_ruta)
 
 
@@ -294,8 +313,114 @@ def ejecutar_movimiento():
         messagebox.showerror("Movimiento", f"No se pudo mover a {destino}.")
 
 
+def limpiar_artefactos():
+    for widget in lista_artefactos_frame.winfo_children():
+        widget.destroy()
+
+
+def actualizar_artefactos_disponibles():
+    limpiar_artefactos()
+    seleccion_artefacto_var.set("")
+
+    estado = logica_interfaz.obtener_estado_jugador()
+    origen_artefacto_var.set(f"En: {estado['ubicacion']}")
+
+    artefactos = logica_interfaz.obtener_artefactos_disponibles()
+    if not artefactos:
+        tk.Label(
+            lista_artefactos_frame,
+            text="No hay artefactos disponibles.",
+            **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "italic")),
+        ).pack(anchor="w", pady=6)
+        return
+
+    for artefacto in artefactos:
+        tk.Button(
+            lista_artefactos_frame,
+            text=artefacto,
+            pady=10,
+            command=lambda a=artefacto: seleccion_artefacto_var.set(a),
+            **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE),
+        ).pack(anchor="w", pady=6)
+
+
+def abrir_pantalla_tomar():
+    actualizar_panel_izquierdo()
+    actualizar_artefactos_disponibles()
+    logica_interfaz.ir_a_tomar()
+
+
+def ejecutar_tomar():
+    artefacto = seleccion_artefacto_var.get().strip()
+    if not artefacto:
+        messagebox.showwarning("Tomar", "Primero selecciona un artefacto.")
+        return
+
+    if logica_interfaz.tomar(artefacto):
+        actualizar_panel_izquierdo()
+        messagebox.showinfo("Tomar", f"Tomaste {artefacto} y se agregó al inventario.")
+        abrir_juego_actualizado()
+    else:
+        messagebox.showerror("Tomar", f"No se pudo tomar {artefacto}.")
+
+
+def volver_al_juego_desde_tomar():
+    abrir_juego_actualizado()
+
+
 def volver_al_juego():
     abrir_juego_actualizado()
+
+
+def limpiar_usos():
+    for widget in lista_usos_frame.winfo_children():
+        widget.destroy()
+
+
+def actualizar_artefactos_usables():
+    limpiar_usos()
+    seleccion_uso_var.set("")
+
+    estado = logica_interfaz.obtener_estado_jugador()
+    origen_uso_var.set(f"Inventario de: {estado['ubicacion']}")
+
+    artefactos = logica_interfaz.obtener_artefactos_usables()
+    if not artefactos:
+        tk.Label(
+            lista_usos_frame,
+            text="No hay artefactos usables.",
+            **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "italic")),
+        ).pack(anchor="w", pady=6)
+        return
+
+    for artefacto in artefactos:
+        tk.Button(
+            lista_usos_frame,
+            text=artefacto,
+            pady=10,
+            command=lambda a=artefacto: seleccion_uso_var.set(a),
+            **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO),
+        ).pack(anchor="w", pady=6)
+
+
+def abrir_pantalla_usar():
+    actualizar_panel_izquierdo()
+    actualizar_artefactos_usables()
+    logica_interfaz.ir_a_usar()
+
+
+def ejecutar_usar():
+    artefacto = seleccion_uso_var.get().strip()
+    if not artefacto:
+        messagebox.showwarning("Usar", "Primero selecciona un artefacto.")
+        return
+
+    if logica_interfaz.usar(artefacto):
+        actualizar_panel_izquierdo()
+        messagebox.showinfo("Usar", f"Usaste {artefacto}.")
+        abrir_juego_actualizado()
+    else:
+        messagebox.showerror("Usar", f"No se pudo usar {artefacto}.")
 
 # MOVIMIENTO
 movimiento = crear_seccion("MOVIMIENTO")
@@ -308,13 +433,13 @@ tk.Button(fila_mov, text="Ver ruta", pady=9, command=abrir_pantalla_ruta, **esti
 artefactos = crear_seccion("ARTEFACTOS")
 fila_art = tk.Frame(artefactos, bg=estilos.BG)
 fila_art.pack(anchor="w")
-tk.Button(fila_art, text="Tomar", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=0, column=0, padx=(0, 6), pady=4)
-tk.Button(fila_art, text="Usar", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=0, column=1, padx=(0, 6), pady=4)
+tk.Button(fila_art, text="Tomar", pady=8, command=abrir_pantalla_tomar, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=0, column=0, padx=(0, 6), pady=4)
+tk.Button(fila_art, text="Usar", pady=8, command=abrir_pantalla_usar, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=0, column=1, padx=(0, 6), pady=4)
 tk.Button(fila_art, text="Donde", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=1, column=0, padx=(0, 6), pady=4)
 tk.Button(fila_art, text="Inventario", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=1, column=1, padx=(0, 6), pady=4)
 
-# SISTEMAS Y TRIPULACION
-sistemas = crear_seccion("SISTEMAS Y TRIPULACION")
+# SISTEMAS Y TRIPULACIÓN
+sistemas = crear_seccion("SISTEMAS Y TRIPULACIÓN")
 fila_sys = tk.Frame(sistemas, bg=estilos.BG)
 fila_sys.pack(anchor="w")
 tk.Button(fila_sys, text="Reparar", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=0, padx=(0, 8), pady=4)
@@ -327,8 +452,8 @@ fila_estado.pack(anchor="w")
 tk.Button(fila_estado, text="Visitados", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=0, column=0, padx=(0, 8), pady=4)
 tk.Button(fila_estado, text="Victoria", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=0, column=1, padx=(0, 8), pady=4)
 
-# Volver al menu
-tk.Button(contenido_derecho, text="Volver al Menu", pady=12,
+# Volver al menú
+tk.Button(contenido_derecho, text="Volver al Menú", pady=12,
           command=lambda: logica_interfaz.ir_a_menu(),
           **estilos.estilo_boton(color_fg=estilos.FG_DIM)).pack(anchor="w", pady=(30, 0))
 
@@ -389,7 +514,133 @@ tk.Button(
 
 tk.Button(
     panel_confirmacion,
-    text="VOLVER",
+    text="VOLVER AL JUEGO",
+    pady=12,
+    command=volver_al_juego,
+    **estilos.estilo_boton(color_fg=estilos.FG_DIM),
+).pack(anchor="w")
+
+
+# ==================== FRAME: TOMAR ARTEFACTO ====================
+contenedor_tomar = tk.Frame(frame_tomar, bg=estilos.BG)
+contenedor_tomar.pack(fill="both", expand=True, padx=18, pady=16)
+
+panel_artefactos = tk.Frame(contenedor_tomar, bg=estilos.BG, width=430)
+panel_artefactos.pack(side="left", fill="both", expand=True, padx=(0, 14))
+panel_artefactos.pack_propagate(False)
+
+tk.Label(
+    panel_artefactos,
+    text="ARTEFACTOS DISPONIBLES",
+    **estilos.estilo_label(fg=estilos.BTN_FG, font=("Courier", 18, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+tk.Label(
+    panel_artefactos,
+    textvariable=origen_artefacto_var,
+    **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+lista_artefactos_frame = tk.Frame(panel_artefactos, bg=estilos.BG)
+lista_artefactos_frame.pack(fill="both", expand=True)
+
+panel_confirmacion_art = tk.Frame(contenedor_tomar, bg=estilos.BG, width=300)
+panel_confirmacion_art.pack(side="left", fill="y")
+panel_confirmacion_art.pack_propagate(False)
+
+tk.Label(
+    panel_confirmacion_art,
+    text="SELECCION",
+    **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold")),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Entry(
+    panel_confirmacion_art,
+    textvariable=seleccion_artefacto_var,
+    state="readonly",
+    width=26,
+    font=("Courier", 13),
+    bg=estilos.BTN_BG,
+    fg=estilos.FG,
+    relief="flat",
+    readonlybackground=estilos.BTN_BG,
+    justify="center",
+).pack(anchor="w", pady=(0, 16))
+
+tk.Button(
+    panel_confirmacion_art,
+    text="TOMAR",
+    pady=12,
+    command=ejecutar_tomar,
+    **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Button(
+    panel_confirmacion_art,
+    text="VOLVER AL JUEGO",
+    pady=12,
+    command=volver_al_juego,
+    **estilos.estilo_boton(color_fg=estilos.FG_DIM),
+).pack(anchor="w")
+
+
+# ==================== FRAME: USAR ARTEFACTO ====================
+contenedor_usar = tk.Frame(frame_usar, bg=estilos.BG)
+contenedor_usar.pack(fill="both", expand=True, padx=18, pady=16)
+
+panel_usos = tk.Frame(contenedor_usar, bg=estilos.BG, width=430)
+panel_usos.pack(side="left", fill="both", expand=True, padx=(0, 14))
+panel_usos.pack_propagate(False)
+
+tk.Label(
+    panel_usos,
+    text="ARTEFACTOS DEL INVENTARIO",
+    **estilos.estilo_label(fg=estilos.BTN_FG, font=("Courier", 18, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+tk.Label(
+    panel_usos,
+    textvariable=origen_uso_var,
+    **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+lista_usos_frame = tk.Frame(panel_usos, bg=estilos.BG)
+lista_usos_frame.pack(fill="both", expand=True)
+
+panel_confirmacion_uso = tk.Frame(contenedor_usar, bg=estilos.BG, width=300)
+panel_confirmacion_uso.pack(side="left", fill="y")
+panel_confirmacion_uso.pack_propagate(False)
+
+tk.Label(
+    panel_confirmacion_uso,
+    text="SELECCION",
+    **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold")),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Entry(
+    panel_confirmacion_uso,
+    textvariable=seleccion_uso_var,
+    state="readonly",
+    width=26,
+    font=("Courier", 13),
+    bg=estilos.BTN_BG,
+    fg=estilos.FG,
+    relief="flat",
+    readonlybackground=estilos.BTN_BG,
+    justify="center",
+).pack(anchor="w", pady=(0, 16))
+
+tk.Button(
+    panel_confirmacion_uso,
+    text="USAR",
+    pady=12,
+    command=ejecutar_usar,
+    **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Button(
+    panel_confirmacion_uso,
+    text="VOLVER AL JUEGO",
     pady=12,
     command=volver_al_juego,
     **estilos.estilo_boton(color_fg=estilos.FG_DIM),
@@ -399,6 +650,8 @@ tk.Button(
 logica_interfaz.frame_menu = frame_menu
 logica_interfaz.frame_juego = frame_juego
 logica_interfaz.frame_mover = frame_mover
+logica_interfaz.frame_tomar = frame_tomar
+logica_interfaz.frame_usar = frame_usar
 logica_interfaz.frame_ruta = frame_ruta
 actualizar_panel_izquierdo()
 abrir_menu()

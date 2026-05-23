@@ -1,3 +1,4 @@
+
 from pathlib import Path
 
 from pyswip import Prolog
@@ -8,6 +9,8 @@ frame_activo = None
 frame_menu = None
 frame_juego = None
 frame_mover = None
+frame_tomar = None
+frame_usar = None
 
 
 archivo_logica = Path(__file__).resolve().parent / "logica.pl"
@@ -103,16 +106,26 @@ def ir_a_mover():
         mostrar_frame(frame_mover)
 
 
+def ir_a_tomar():
+    if frame_tomar:
+        mostrar_frame(frame_tomar)
+
+
+def ir_a_usar():
+    if frame_usar:
+        mostrar_frame(frame_usar)
+
+
 # ==========================
 # Stubs de acciones (no implementadas)
 # ==========================
 
 def tomar(artefacto):
-    pass
+    return consultar_uno(f"tomar({artefacto})") is not None
 
 
 def usar(artefacto):
-    pass
+    return consultar_uno(f"usar({artefacto})") is not None
 
 
 def reparar(sistema):
@@ -133,21 +146,47 @@ def mover(modulo):
 
 def obtener_destinos_disponibles():
     destinos = []
-    vistos = set()
     for resultado in consultar_todos("modulo(Destino, _)"):
         destino = str(resultado.get("Destino") or "")
-        if destino and destino not in vistos and puedo_ir(destino):
-            vistos.add(destino)
+        if destino and puedo_ir(destino):
             destinos.append(destino)
     return destinos
 
 
 def donde_esta(artefacto):
-    pass
+    resultado = consultar_uno(f"donde_esta({artefacto}, Modulo)") or {}
+    return str(resultado.get("Modulo") or "")
 
 
 def que_tengo():
-    pass
+    resultado = consultar_uno("que_tengo(Lista)") or {}
+    return lista_a_texto(resultado.get("Lista"))
+
+
+def usados():
+    resultado = consultar_uno("usados(Lista)") or {}
+    return lista_a_texto(resultado.get("Lista"))
+
+
+def obtener_artefactos_usables():
+    inventario = que_tengo()
+    usados_actuales = set(usados())
+    return [artefacto for artefacto in inventario if artefacto not in usados_actuales]
+
+
+def obtener_artefactos_disponibles():
+    jugador = consultar_uno("jugador(Modulo)") or {}
+    ubicacion = str(jugador.get("Modulo") or "")
+    if not ubicacion:
+        return []
+
+    logrados = set(que_tengo())
+    artefactos = []
+    for resultado in consultar_todos(f"artefacto(Artefacto, {ubicacion})"):
+        artefacto = str(resultado.get("Artefacto") or "")
+        if artefacto and artefacto not in logrados:
+            artefactos.append(artefacto)
+    return artefactos
 
 
 def modulos_visitados():
@@ -164,12 +203,10 @@ def ruta(inicio, fin):
 
 def obtener_modulos():
     modulos = []
-    vistos = set()
-    for resultado in consultar_todos("modulo(M, _)"):
-        m = str(resultado.get("M") or "")
-        if m and m not in vistos:
-            vistos.add(m)
-            modulos.append(m)
+    for resultado in consultar_todos("modulo(Modulo, _)"):
+        modulo = str(resultado.get("Modulo") or "")
+        if modulo:
+            modulos.append(modulo)
     return modulos
 
 
@@ -182,10 +219,16 @@ __all__ = [
     "ir_a_menu",
     "ir_a_jugar",
     "ir_a_mover",
+    "ir_a_tomar",
+    "ir_a_usar",
     "obtener_estado_jugador",
     "obtener_destinos_disponibles",
+    "obtener_artefactos_disponibles",
+    "obtener_artefactos_usables",
     "puedo_ir",
     "mover",
+    "tomar",
+    "usar",
     "ruta",
     "obtener_modulos",
 ]
