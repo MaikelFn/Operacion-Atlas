@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 from pyswip import Prolog
@@ -8,15 +7,16 @@ from pyswip import Prolog
 frame_activo = None
 frame_menu = None
 frame_juego = None
+frame_mover = None
 
 
 archivo_logica = Path(__file__).resolve().parent / "logica.pl"
+_prolog = Prolog()
+_prolog.consult(str(archivo_logica).replace("\\", "/"))
 
 
 def obtener_prolog():
-    prolog = Prolog()
-    prolog.consult(str(archivo_logica).replace("\\", "/"))
-    return prolog
+    return _prolog
 
 
 def consultar_uno(query):
@@ -98,6 +98,11 @@ def ir_a_jugar():
         mostrar_frame(frame_juego)
 
 
+def ir_a_mover():
+    if frame_mover:
+        mostrar_frame(frame_mover)
+
+
 # ==========================
 # Stubs de acciones (no implementadas)
 # ==========================
@@ -119,11 +124,22 @@ def rescatar(tripulante):
 
 
 def puedo_ir(destino):
-    pass
+    return consultar_uno(f"puedo_ir({destino})") is not None
 
 
 def mover(modulo):
-    pass
+    return consultar_uno(f"mover({modulo})") is not None
+
+
+def obtener_destinos_disponibles():
+    destinos = []
+    vistos = set()
+    for resultado in consultar_todos("modulo(Destino, _)"):
+        destino = str(resultado.get("Destino") or "")
+        if destino and destino not in vistos and puedo_ir(destino):
+            vistos.add(destino)
+            destinos.append(destino)
+    return destinos
 
 
 def donde_esta(artefacto):
@@ -150,5 +166,9 @@ __all__ = [
     "mostrar_frame",
     "ir_a_menu",
     "ir_a_jugar",
+    "ir_a_mover",
     "obtener_estado_jugador",
+    "obtener_destinos_disponibles",
+    "puedo_ir",
+    "mover",
 ]
