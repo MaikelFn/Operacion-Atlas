@@ -12,6 +12,7 @@ frame_mover = None
 frame_tomar = None
 frame_usar = None
 frame_donde = None
+frame_inventario = None
 
 
 archivo_logica = Path(__file__).resolve().parent / "logica.pl"
@@ -122,6 +123,11 @@ def ir_a_donde():
         mostrar_frame(frame_donde)
 
 
+def ir_a_inventario():
+    if frame_inventario:
+        mostrar_frame(frame_inventario)
+
+
 # ==========================
 # Stubs de acciones (no implementadas)
 # ==========================
@@ -205,6 +211,21 @@ def obtener_artefactos_faltantes():
     return artefactos
 
 
+def obtener_inventario_artefactos():
+    inventario = que_tengo()
+    usados_actuales = set(usados())
+    artefactos = []
+
+    for artefacto in inventario:
+        artefactos.append({
+            "artefacto": artefacto,
+            "usado": artefacto in usados_actuales,
+            "modulo": donde_esta(artefacto),
+        })
+
+    return artefactos
+
+
 def modulos_visitados():
     pass
 
@@ -238,10 +259,12 @@ __all__ = [
     "ir_a_tomar",
     "ir_a_usar",
     "ir_a_donde",
+    "ir_a_inventario",
     "obtener_estado_jugador",
     "obtener_destinos_disponibles",
     "obtener_artefactos_disponibles",
     "obtener_artefactos_faltantes",
+    "obtener_inventario_artefactos",
     "obtener_artefactos_usables",
     "puedo_ir",
     "mover",
