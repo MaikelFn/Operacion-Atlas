@@ -65,6 +65,10 @@ frame_usar = tk.Frame(ventana, bg=estilos.BG)
 frame_usar.config(width=900, height=550)
 frame_usar.pack_propagate(False)
 
+frame_donde = tk.Frame(ventana, bg=estilos.BG)
+frame_donde.config(width=900, height=550)
+frame_donde.pack_propagate(False)
+
 # ==================== FRAME: RUTA (persistente)
 frame_ruta = tk.Frame(ventana, bg=estilos.BG)
 frame_ruta.config(width=900, height=550)
@@ -232,6 +236,8 @@ seleccion_artefacto_var = tk.StringVar(value="")
 origen_artefacto_var = tk.StringVar(value="")
 seleccion_uso_var = tk.StringVar(value="")
 origen_uso_var = tk.StringVar(value="")
+seleccion_donde_var = tk.StringVar(value="")
+ubicacion_donde_var = tk.StringVar(value="")
 
 
 def limpiar_destinos():
@@ -409,6 +415,47 @@ def abrir_pantalla_usar():
     logica_interfaz.ir_a_usar()
 
 
+def limpiar_donde():
+    for widget in lista_donde_frame.winfo_children():
+        widget.destroy()
+
+
+def actualizar_artefactos_donde():
+    limpiar_donde()
+    seleccion_donde_var.set("")
+    ubicacion_donde_var.set("")
+
+    artefactos = logica_interfaz.obtener_artefactos_faltantes()
+    if not artefactos:
+        tk.Label(
+            lista_donde_frame,
+            text="No hay artefactos fuera del inventario.",
+            **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "italic")),
+        ).pack(anchor="w", pady=6)
+        return
+
+    for artefacto in artefactos:
+        tk.Button(
+            lista_donde_frame,
+            text=artefacto,
+            pady=10,
+            command=lambda a=artefacto: seleccionar_donde(a),
+            **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL),
+        ).pack(anchor="w", pady=6)
+
+
+def seleccionar_donde(artefacto):
+    seleccion_donde_var.set(artefacto)
+    modulo = logica_interfaz.donde_esta(artefacto)
+    ubicacion_donde_var.set(f"Se encuentra en: {modulo}")
+
+
+def abrir_pantalla_donde():
+    actualizar_panel_izquierdo()
+    actualizar_artefactos_donde()
+    logica_interfaz.ir_a_donde()
+
+
 def ejecutar_usar():
     artefacto = seleccion_uso_var.get().strip()
     if not artefacto:
@@ -435,7 +482,7 @@ fila_art = tk.Frame(artefactos, bg=estilos.BG)
 fila_art.pack(anchor="w")
 tk.Button(fila_art, text="Tomar", pady=8, command=abrir_pantalla_tomar, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=0, column=0, padx=(0, 6), pady=4)
 tk.Button(fila_art, text="Usar", pady=8, command=abrir_pantalla_usar, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=0, column=1, padx=(0, 6), pady=4)
-tk.Button(fila_art, text="Donde", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=1, column=0, padx=(0, 6), pady=4)
+tk.Button(fila_art, text="Donde", pady=8, command=abrir_pantalla_donde, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=1, column=0, padx=(0, 6), pady=4)
 tk.Button(fila_art, text="Inventario", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=1, column=1, padx=(0, 6), pady=4)
 
 # SISTEMAS Y TRIPULACIÓN
@@ -646,12 +693,70 @@ tk.Button(
     **estilos.estilo_boton(color_fg=estilos.FG_DIM),
 ).pack(anchor="w")
 
+
+# ==================== FRAME: DÓNDE ESTÁ EL ARTEFACTO ====================
+contenedor_donde = tk.Frame(frame_donde, bg=estilos.BG)
+contenedor_donde.pack(fill="both", expand=True, padx=18, pady=16)
+
+panel_donde = tk.Frame(contenedor_donde, bg=estilos.BG, width=430)
+panel_donde.pack(side="left", fill="both", expand=True, padx=(0, 14))
+panel_donde.pack_propagate(False)
+
+tk.Label(
+    panel_donde,
+    text="ARTEFACTOS FUERA DEL INVENTARIO",
+    **estilos.estilo_label(fg=estilos.BTN_FG, font=("Courier", 18, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+lista_donde_frame = tk.Frame(panel_donde, bg=estilos.BG)
+lista_donde_frame.pack(fill="both", expand=True)
+
+panel_resultado_donde = tk.Frame(contenedor_donde, bg=estilos.BG, width=300)
+panel_resultado_donde.pack(side="left", fill="y")
+panel_resultado_donde.pack_propagate(False)
+
+tk.Label(
+    panel_resultado_donde,
+    text="SELECCION",
+    **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold")),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Entry(
+    panel_resultado_donde,
+    textvariable=seleccion_donde_var,
+    state="readonly",
+    width=26,
+    font=("Courier", 13),
+    bg=estilos.BTN_BG,
+    fg=estilos.FG,
+    relief="flat",
+    readonlybackground=estilos.BTN_BG,
+    justify="center",
+).pack(anchor="w", pady=(0, 16))
+
+tk.Label(
+    panel_resultado_donde,
+    textvariable=ubicacion_donde_var,
+    wraplength=260,
+    justify="left",
+    **estilos.estilo_label(fg=estilos.FG, font=("Courier", 12, "bold")),
+).pack(anchor="w", pady=(0, 16))
+
+tk.Button(
+    panel_resultado_donde,
+    text="VOLVER AL JUEGO",
+    pady=12,
+    command=volver_al_juego,
+    **estilos.estilo_boton(color_fg=estilos.FG_DIM),
+).pack(anchor="w")
+
 # Referencias y estado inicial
 logica_interfaz.frame_menu = frame_menu
 logica_interfaz.frame_juego = frame_juego
 logica_interfaz.frame_mover = frame_mover
 logica_interfaz.frame_tomar = frame_tomar
 logica_interfaz.frame_usar = frame_usar
+logica_interfaz.frame_donde = frame_donde
 logica_interfaz.frame_ruta = frame_ruta
 actualizar_panel_izquierdo()
 abrir_menu()
