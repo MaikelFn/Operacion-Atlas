@@ -1,3 +1,6 @@
+% =========================================
+% ESTADO DINAMICO DEL JUEGO
+% =========================================
 :- dynamic jugador/1.
 :- dynamic artefactosLogrados/1.
 :- dynamic sistema/4.
@@ -8,6 +11,10 @@
 :- dynamic sistemas_reparados/1.
 
 :- consult('conocimiento.pl').
+
+% =========================================
+% ESTADO INICIAL
+% =========================================
 
 visitados([]).
 usados([]).
@@ -23,6 +30,10 @@ inicializar_juego :-
     jugador(ModuloInicial),
     registrar_visita(ModuloInicial).
 
+% =========================================
+% CONECTIVIDAD ENTRE MODULOS
+% =========================================
+
 % Nombre: esta_conectado/2
 % Entrada: Dos modulos
 % Salida: Verdadero si existe conexion entre ambos modulos
@@ -32,6 +43,10 @@ esta_conectado(X, Y) :-
     enlace(X, Y).
 esta_conectado(X, Y) :-
     enlace(Y, X).
+
+% =========================================
+% RUTAS ENTRE MODULOS
+% =========================================
 
 % Nombre: ruta/3
 % Entrada: Inicio, Destino
@@ -52,6 +67,10 @@ ruta_aux(Actual, Destino, Visitados, Ruta) :-
     \+ member(Siguiente, Visitados),
     append(Visitados, [Siguiente], Visitados2),
     ruta_aux(Siguiente, Destino, Visitados2, Ruta).
+
+% =========================================
+% ARTEFACTOS LOGRADOS Y USO DE ARTEFACTOS
+% =========================================
 
 % Nombre: tiene/1
 % Entrada: Artefacto
@@ -82,6 +101,10 @@ usar(Artefacto) :-
     usados(Lista),
     retract(usados(Lista)),
     assertz(usados([Artefacto | Lista])).
+
+% =========================================
+% VALIDACIONES DE MOVIMIENTO
+% =========================================
 
 % Nombre: cumple_requisito_artefacto/1
 % Entrada: Modulo
@@ -133,6 +156,10 @@ cumple_requisito_estado(Modulo) :-
 cumple_requisito_estado(Modulo) :-
     \+ necesitaEstado(Modulo, _, _).
 
+% =========================================
+% REGISTRO DE ESTADOS
+% =========================================
+
 % Nombre: registrar_visita/1
 % Entrada: Modulo
 % Salida: Registra el modulo como visitado si no estaba
@@ -175,6 +202,10 @@ registrar_reparacion(Sistema) :-
     retract(sistemas_reparados(Lista)),
     assertz(sistemas_reparados([Sistema | Lista])).
 
+% =========================================
+% MOVIMIENTO
+% =========================================
+
 % Nombre: puedo_ir/1
 % Entrada: Destino
 % Salida: Verdadero si el jugador puede moverse a ese modulo
@@ -201,6 +232,10 @@ mover(Destino) :-
     assertz(jugador(Destino)),
     registrar_visita(Destino).
 
+% =========================================
+% ARTEFACTOS
+% =========================================
+
 % Nombre: tomar/1
 % Entrada: Artefacto
 % Salida: Agrega el artefacto a la lista de logrados si esta en el modulo actual
@@ -213,6 +248,10 @@ tomar(Artefacto) :-
     \+ member(Artefacto, Lista),
     retract(artefactosLogrados(Lista)),
     assertz(artefactosLogrados([Artefacto | Lista])).
+
+% =========================================
+% REPARACION DE SISTEMAS
+% =========================================
 
 % Nombre: tiene_todos/1
 % Entrada: Lista de artefactos
@@ -255,6 +294,10 @@ reparar(Sistema) :-
         )
     ),
     registrar_reparacion(Sistema).
+
+% =========================================
+% RESCATE DE TRIPULANTES
+% =========================================
 
 % Nombre: esta_rescatado/1
 % Entrada: Tripulante
@@ -307,6 +350,10 @@ rescatar(Tripulante) :-
     ),
     registrar_rescate(Tripulante).
 
+% =========================================
+% CONSULTAS
+% =========================================
+
 % Nombre: donde_esta/2
 % Entrada: Artefacto
 % Salida: Modulo donde se encuentra el artefacto
@@ -330,6 +377,10 @@ que_tengo(Lista) :-
 % Autor: Maikel Flores
 modulos_visitados(Lista) :-
     visitados(Lista).
+
+% =========================================
+% CONDICIONES DE VICTORIA
+% =========================================
 
 % Nombre: cumple_objetivos_sistemas/0
 % Entrada: Ninguna
@@ -361,3 +412,7 @@ cumple_objetivos_tripulantes :-
 gano :-
     cumple_objetivos_sistemas,
     cumple_objetivos_tripulantes.
+
+% =========================================
+% COMO GANO
+% =========================================
