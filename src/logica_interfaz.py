@@ -13,6 +13,8 @@ frame_tomar = None
 frame_usar = None
 frame_donde = None
 frame_inventario = None
+frame_rescatar = None
+frame_visitados = None
 
 
 archivo_logica = Path(__file__).resolve().parent / "logica.pl"
@@ -128,6 +130,16 @@ def ir_a_inventario():
         mostrar_frame(frame_inventario)
 
 
+def ir_a_rescatar():
+    if frame_rescatar:
+        mostrar_frame(frame_rescatar)
+
+
+def ir_a_visitados():
+    if frame_visitados:
+        mostrar_frame(frame_visitados)
+
+
 # ==========================
 # Stubs de acciones (no implementadas)
 # ==========================
@@ -140,8 +152,32 @@ def usar(artefacto):
     return consultar_uno(f"usar({artefacto})") is not None
 
 
+def inicializar_juego():
+    return consultar_uno("inicializar_juego") is not None
+
+
 def reparar(sistema):
     return consultar_uno(f"reparar({sistema})") is not None
+
+
+def obtener_tripulantes_atrapados_modulo_actual():
+    jugador = consultar_uno("jugador(Modulo)") or {}
+    ubicacion = str(jugador.get("Modulo") or "")
+
+    tripulantes = []
+    for resultado in consultar_todos(f"tripulante(Tripulante, {ubicacion}, Sistemas, atrapado)"):
+        tripulante = str(resultado.get("Tripulante") or "")
+        if tripulante:
+            tripulantes.append(tripulante)
+    return tripulantes
+
+
+def obtener_sistemas_requeridos_tripulante(tripulante):
+    jugador = consultar_uno("jugador(Modulo)") or {}
+    ubicacion = str(jugador.get("Modulo") or "")
+
+    resultado = consultar_uno(f"tripulante({tripulante}, {ubicacion}, Sistemas, atrapado)") or {}
+    return lista_a_texto(resultado.get("Sistemas"))
 
 
 def obtener_sistemas_en_fallo():
@@ -165,7 +201,7 @@ def obtener_artefactos_requeridos_sistema(sistema):
 
 
 def rescatar(tripulante):
-    pass
+    return consultar_uno(f"rescatar({tripulante})") is not None
 
 
 def puedo_ir(destino):
@@ -245,7 +281,8 @@ def obtener_inventario_artefactos():
 
 
 def modulos_visitados():
-    pass
+    resultado = consultar_uno("modulos_visitados(Lista)") or {}
+    return lista_a_texto(resultado.get("Lista"))
 
 
 def ruta(inicio, fin):
@@ -263,6 +300,11 @@ def obtener_modulos():
         if modulo:
             modulos.append(modulo)
     return modulos
+
+
+def obtener_descripcion_modulo(modulo):
+    resultado = consultar_uno(f"modulo({modulo}, Descripcion)") or {}
+    return str(resultado.get("Descripcion") or "")
 
 
 def como_gano():

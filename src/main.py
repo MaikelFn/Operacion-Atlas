@@ -76,6 +76,14 @@ frame_reparar = tk.Frame(ventana, bg=estilos.BG)
 frame_reparar.config(width=900, height=550)
 frame_reparar.pack_propagate(False)
 
+frame_visitados = tk.Frame(ventana, bg=estilos.BG)
+frame_visitados.config(width=900, height=550)
+frame_visitados.pack_propagate(False)
+
+frame_rescatar = tk.Frame(ventana, bg=estilos.BG)
+frame_rescatar.config(width=900, height=550)
+frame_rescatar.pack_propagate(False)
+
 # ==================== FRAME: RUTA (persistente)
 frame_ruta = tk.Frame(ventana, bg=estilos.BG)
 frame_ruta.config(width=900, height=550)
@@ -248,6 +256,10 @@ detalle_inventario_var = tk.StringVar(value="")
 seleccion_sistema_reparar_var = tk.StringVar(value="")
 seleccion_artefacto_reparar_var = tk.StringVar(value="")
 origen_reparar_var = tk.StringVar(value="")
+seleccion_tripulante_rescatar_var = tk.StringVar(value="")
+seleccion_sistema_rescatar_var = tk.StringVar(value="")
+seleccion_visitado_var = tk.StringVar(value="")
+descripcion_visitado_var = tk.StringVar(value="")
 
 
 def limpiar_destinos():
@@ -520,6 +532,87 @@ def abrir_pantalla_reparar():
     logica_interfaz.mostrar_frame(frame_reparar)
 
 
+def abrir_pantalla_visitados():
+    actualizar_panel_izquierdo()
+    actualizar_visitados()
+    logica_interfaz.ir_a_visitados()
+
+
+def abrir_pantalla_rescatar():
+    actualizar_panel_izquierdo()
+    actualizar_tripulantes_rescatar()
+    logica_interfaz.ir_a_rescatar()
+
+
+def limpiar_rescatar():
+    for widget in lista_rescatar_frame.winfo_children():
+        widget.destroy()
+    for widget in lista_sistemas_rescatar_frame.winfo_children():
+        widget.destroy()
+
+
+def actualizar_tripulantes_rescatar():
+    limpiar_rescatar()
+    seleccion_tripulante_rescatar_var.set("")
+    seleccion_sistema_rescatar_var.set("")
+
+    tripulantes = logica_interfaz.obtener_tripulantes_atrapados_modulo_actual()
+    if not tripulantes:
+        tk.Label(
+            lista_rescatar_frame,
+            text="No hay tripulantes atrapados en este módulo.",
+            **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "italic")),
+        ).pack(anchor="w", pady=6)
+        return
+
+    for tripulante in tripulantes:
+        tk.Button(
+            lista_rescatar_frame,
+            text=tripulante,
+            pady=10,
+            command=lambda t=tripulante: seleccionar_tripulante_rescatar(t),
+            **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO),
+        ).pack(anchor="w", pady=6)
+
+
+def seleccionar_tripulante_rescatar(tripulante):
+    seleccion_tripulante_rescatar_var.set(tripulante)
+    seleccion_sistema_rescatar_var.set("")
+
+    for widget in lista_sistemas_rescatar_frame.winfo_children():
+        widget.destroy()
+
+    sistemas = logica_interfaz.obtener_sistemas_requeridos_tripulante(tripulante)
+    if not sistemas:
+        tk.Label(
+            lista_sistemas_rescatar_frame,
+            text="No hay sistemas listados para este tripulante.",
+            **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "italic")),
+        ).pack(anchor="w", pady=6)
+        return
+
+    for sistema in sistemas:
+        tk.Label(
+            lista_sistemas_rescatar_frame,
+            text=sistema,
+            **estilos.estilo_label(fg=estilos.COLOR_VERDE, font=("Courier", 12, "bold")),
+        ).pack(anchor="w", pady=6)
+
+
+def ejecutar_rescate():
+    tripulante = seleccion_tripulante_rescatar_var.get().strip()
+    if not tripulante:
+        messagebox.showwarning("Rescatar", "Selecciona primero un tripulante.")
+        return
+
+    if logica_interfaz.rescatar(tripulante):
+        actualizar_panel_izquierdo()
+        messagebox.showinfo("Rescatar", f"Tripulante {tripulante} rescatado con éxito.")
+        abrir_juego_actualizado()
+    else:
+        messagebox.showerror("Rescatar", f"No se pudo rescatar {tripulante}. Asegúrate de cumplir los sistemas requeridos.")
+
+
 def ejecutar_usar():
     artefacto = seleccion_uso_var.get().strip()
     if not artefacto:
@@ -554,13 +647,13 @@ sistemas = crear_seccion("SISTEMAS Y TRIPULACIÓN")
 fila_sys = tk.Frame(sistemas, bg=estilos.BG)
 fila_sys.pack(anchor="w")
 tk.Button(fila_sys, text="Reparar", pady=8, command=abrir_pantalla_reparar, **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=0, padx=(0, 8), pady=4)
-tk.Button(fila_sys, text="Rescatar", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=1, padx=(0, 8), pady=4)
+tk.Button(fila_sys, text="Rescatar", pady=8, command=abrir_pantalla_rescatar, **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=1, padx=(0, 8), pady=4)
 
 # ESTADO Y VICTORIA
 estado_sec = crear_seccion("ESTADO Y VICTORIA")
 fila_estado = tk.Frame(estado_sec, bg=estilos.BG)
 fila_estado.pack(anchor="w")
-tk.Button(fila_estado, text="Visitados", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=0, column=0, padx=(0, 8), pady=4)
+tk.Button(fila_estado, text="Visitados", pady=8, command=abrir_pantalla_visitados, **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=0, column=0, padx=(0, 8), pady=4)
 tk.Button(fila_estado, text="Victoria", pady=8, command=lambda: None, **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=0, column=1, padx=(0, 8), pady=4)
 
 # Volver al menú
@@ -1006,6 +1099,158 @@ def ejecutar_reparacion():
     else:
         messagebox.showerror("Reparar", f"No se pudo reparar {sistema}. Asegúrate de usar los artefactos requeridos.")
 
+
+def limpiar_visitados():
+    for widget in lista_visitados_frame.winfo_children():
+        widget.destroy()
+
+
+def actualizar_visitados():
+    limpiar_visitados()
+    seleccion_visitado_var.set("")
+    descripcion_visitado_var.set("")
+
+    visitados = logica_interfaz.modulos_visitados()
+    if not visitados:
+        tk.Label(
+            lista_visitados_frame,
+            text="No hay módulos visitados registrados.",
+            **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "italic")),
+        ).pack(anchor="w", pady=6)
+        return
+
+    for modulo in visitados:
+        tk.Button(
+            lista_visitados_frame,
+            text=modulo,
+            pady=10,
+            command=lambda m=modulo: seleccionar_visitado(m),
+            **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL),
+        ).pack(anchor="w", pady=6)
+
+
+def seleccionar_visitado(modulo):
+    seleccion_visitado_var.set(modulo)
+    descripcion_visitado_var.set(logica_interfaz.obtener_descripcion_modulo(modulo))
+
+
+# ==================== FRAME: RESCATAR TRIPULANTE ====================
+contenedor_rescatar = tk.Frame(frame_rescatar, bg=estilos.BG)
+contenedor_rescatar.pack(fill="both", expand=True, padx=18, pady=16)
+
+panel_rescatar = tk.Frame(contenedor_rescatar, bg=estilos.BG, width=430)
+panel_rescatar.pack(side="left", fill="both", expand=True, padx=(0, 14))
+panel_rescatar.pack_propagate(False)
+
+tk.Label(
+    panel_rescatar,
+    text="TRIPULANTES ATRAPADOS (MÓDULO ACTUAL)",
+    **estilos.estilo_label(fg=estilos.BTN_FG, font=("Courier", 18, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+lista_rescatar_frame = tk.Frame(panel_rescatar, bg=estilos.BG)
+lista_rescatar_frame.pack(fill="both", expand=True)
+
+panel_detalle_rescatar = tk.Frame(contenedor_rescatar, bg=estilos.BG, width=300)
+panel_detalle_rescatar.pack(side="left", fill="y")
+panel_detalle_rescatar.pack_propagate(False)
+
+tk.Label(
+    panel_detalle_rescatar,
+    text="SELECCION",
+    **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold")),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Entry(
+    panel_detalle_rescatar,
+    textvariable=seleccion_tripulante_rescatar_var,
+    state="readonly",
+    width=26,
+    font=("Courier", 13),
+    bg=estilos.BTN_BG,
+    fg=estilos.FG,
+    relief="flat",
+    readonlybackground=estilos.BTN_BG,
+    justify="center",
+).pack(anchor="w", pady=(0, 8))
+
+tk.Label(
+    panel_detalle_rescatar,
+    text="Sistemas requeridos:",
+    **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "bold")),
+).pack(anchor="w", pady=(8, 4))
+
+lista_sistemas_rescatar_frame = tk.Frame(panel_detalle_rescatar, bg=estilos.BG)
+lista_sistemas_rescatar_frame.pack(fill="both", expand=True)
+
+tk.Button(
+    panel_detalle_rescatar,
+    text="RESCATAR",
+    pady=12,
+    command=ejecutar_rescate,
+    **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE),
+).pack(anchor="w", pady=(0, 12))
+
+tk.Button(
+    panel_detalle_rescatar,
+    text="VOLVER AL JUEGO",
+    pady=12,
+    command=volver_al_juego,
+    **estilos.estilo_boton(color_fg=estilos.FG_DIM),
+).pack(anchor="w")
+
+
+# ==================== FRAME: VISITADOS ====================
+contenedor_visitados = tk.Frame(frame_visitados, bg=estilos.BG)
+contenedor_visitados.pack(fill="both", expand=True, padx=18, pady=16)
+
+panel_visitados = tk.Frame(contenedor_visitados, bg=estilos.BG, width=430)
+panel_visitados.pack(side="left", fill="both", expand=True, padx=(0, 14))
+panel_visitados.pack_propagate(False)
+
+tk.Label(
+    panel_visitados,
+    text="MÓDULOS VISITADOS",
+    **estilos.estilo_label(fg=estilos.BTN_FG, font=("Courier", 18, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+lista_visitados_frame = tk.Frame(panel_visitados, bg=estilos.BG)
+lista_visitados_frame.pack(fill="both", expand=True)
+
+panel_detalle_visitados = tk.Frame(contenedor_visitados, bg=estilos.BG, width=300)
+panel_detalle_visitados.pack(side="left", fill="y")
+panel_detalle_visitados.pack_propagate(False)
+
+tk.Label(
+    panel_detalle_visitados,
+    textvariable=seleccion_visitado_var,
+    wraplength=260,
+    justify="left",
+    **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold")),
+).pack(anchor="w", pady=(0, 10))
+
+tk.Label(
+    panel_detalle_visitados,
+    text="Descripción del módulo:",
+    **estilos.estilo_label(fg=estilos.FG_DIM, font=("Courier", 11, "bold")),
+).pack(anchor="w", pady=(0, 4))
+
+tk.Label(
+    panel_detalle_visitados,
+    textvariable=descripcion_visitado_var,
+    wraplength=260,
+    justify="left",
+    **estilos.estilo_label(fg=estilos.FG, font=("Courier", 12, "bold")),
+).pack(anchor="w", pady=(0, 16))
+
+tk.Button(
+    panel_detalle_visitados,
+    text="VOLVER AL JUEGO",
+    pady=12,
+    command=volver_al_juego,
+    **estilos.estilo_boton(color_fg=estilos.FG_DIM),
+).pack(anchor="w")
+
 # Referencias y estado inicial
 logica_interfaz.frame_menu = frame_menu
 logica_interfaz.frame_juego = frame_juego
@@ -1014,7 +1259,10 @@ logica_interfaz.frame_tomar = frame_tomar
 logica_interfaz.frame_usar = frame_usar
 logica_interfaz.frame_donde = frame_donde
 logica_interfaz.frame_inventario = frame_inventario
+logica_interfaz.frame_rescatar = frame_rescatar
+logica_interfaz.frame_visitados = frame_visitados
 logica_interfaz.frame_ruta = frame_ruta
+logica_interfaz.inicializar_juego()
 actualizar_panel_izquierdo()
 abrir_menu()
 
