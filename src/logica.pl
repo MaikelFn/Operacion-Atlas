@@ -9,6 +9,7 @@
 :- dynamic usados/1.
 :- dynamic tripulantes_rescatados/1.
 :- dynamic sistemas_reparados/1.
+:- dynamic ruta_historial/1.
 
 :- consult('conocimiento.pl').
 
@@ -20,6 +21,7 @@ visitados([]).
 usados([]).
 tripulantes_rescatados([]).
 sistemas_reparados([]).
+ruta_historial([]).
 
 % Nombre: inicializar_juego/0
 % Entrada: Ninguna
@@ -100,7 +102,8 @@ usar(Artefacto) :-
     \+ uso(Artefacto),
     usados(Lista),
     retract(usados(Lista)),
-    assertz(usados([Artefacto | Lista])).
+    assertz(usados([Artefacto | Lista])),
+    agregar_a_ruta(usaste(Artefacto)).
 
 % =========================================
 % VALIDACIONES DE MOVIMIENTO
@@ -174,6 +177,17 @@ registrar_visita(Modulo) :-
     retract(visitados(Lista)),
     assertz(visitados([Modulo | Lista])).
 
+% Nombre: agregar_a_ruta/1
+% Entrada: Evento
+% Salida: Registra el evento al final del historial de ruta
+% Funcion: Guarda en orden cronologico las acciones relevantes del jugador
+% Autor: Tayler Wynta
+agregar_a_ruta(Evento) :-
+    ruta_historial(Lista),
+    retract(ruta_historial(Lista)),
+    append(Lista, [Evento], ListaNueva),
+    assertz(ruta_historial(ListaNueva)).
+
 % Nombre: registrar_rescate/1
 % Entrada: Tripulante
 % Salida: Registra el tripulante como rescatado si no estaba
@@ -230,7 +244,8 @@ mover(Destino) :-
     jugador(Actual),
     retract(jugador(Actual)),
     assertz(jugador(Destino)),
-    registrar_visita(Destino).
+    registrar_visita(Destino),
+    agregar_a_ruta(fuiste_a(Destino)).
 
 % =========================================
 % ARTEFACTOS
@@ -247,7 +262,8 @@ tomar(Artefacto) :-
     artefactosLogrados(Lista),
     \+ member(Artefacto, Lista),
     retract(artefactosLogrados(Lista)),
-    assertz(artefactosLogrados([Artefacto | Lista])).
+    assertz(artefactosLogrados([Artefacto | Lista])),
+    agregar_a_ruta(tomaste(Artefacto)).
 
 % =========================================
 % REPARACION DE SISTEMAS
@@ -293,7 +309,8 @@ reparar(Sistema) :-
             restaurado
         )
     ),
-    registrar_reparacion(Sistema).
+    registrar_reparacion(Sistema),
+    agregar_a_ruta(reparaste(Sistema)).
 
 % =========================================
 % RESCATE DE TRIPULANTES
@@ -348,7 +365,8 @@ rescatar(Tripulante) :-
             rescatado
         )
     ),
-    registrar_rescate(Tripulante).
+    registrar_rescate(Tripulante),
+    agregar_a_ruta(rescataste(Tripulante)).
 
 % =========================================
 % CONSULTAS
@@ -377,6 +395,14 @@ que_tengo(Lista) :-
 % Autor: Maikel Flores
 modulos_visitados(Lista) :-
     visitados(Lista).
+
+% Nombre: historial_ruta/1
+% Entrada: Ninguna (variable de salida)
+% Salida: Lista de eventos registrados en la ruta del jugador
+% Funcion: Expone el historial cronologico de acciones registradas
+% Autor: Tayler Wynta
+historial_ruta(Lista) :-
+    ruta_historial(Lista).
 
 % =========================================
 % CONDICIONES DE VICTORIA
