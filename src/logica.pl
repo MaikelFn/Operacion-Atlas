@@ -416,3 +416,40 @@ gano :-
 % =========================================
 % COMO GANO
 % =========================================
+
+% Nombre: sistemas_pendientes/1
+% Entrada: Ninguna (variable de salida)
+% Salida: Lista de terminos sistema_pendiente(Sistema, Modulo, Artefactos, Ruta)
+% Funcion: Recopila los sistemas objetivo que aun no han sido reparados
+sistemas_pendientes(Lista) :-
+    findall(
+        sistema_pendiente(Sistema, Modulo, Artefactos, RutaDesdeJugador),
+        (
+            objetivoS(Sistema, restaurado),
+            \+ esta_reparado(Sistema),
+            sistema(Modulo, Sistema, Artefactos, fallo),
+            jugador(Actual),
+            ruta(Actual, Modulo, RutaDesdeJugador)
+        ),
+        Lista
+    ).
+
+% Nombre: artefactos_pendientes/1
+% Entrada: Ninguna (variable de salida)
+% Salida: Lista de terminos artefacto_pendiente(Artefacto, Modulo, Ruta)
+% Funcion: Recopila los artefactos requeridos para reparaciones que aun no fueron usados
+artefactos_pendientes(Lista) :-
+    findall(
+        artefacto_pendiente(Artefacto, ModuloArtefacto, RutaDesdeJugador),
+        (
+            objetivoS(Sistema, restaurado),
+            \+ esta_reparado(Sistema),
+            sistema(_, Sistema, Artefactos, fallo),
+            member(Artefacto, Artefactos),
+            \+ uso(Artefacto),
+            artefacto(Artefacto, ModuloArtefacto),
+            jugador(Actual),
+            ruta(Actual, ModuloArtefacto, RutaDesdeJugador)
+        ),
+        Lista
+    ).
