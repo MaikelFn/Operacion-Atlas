@@ -479,3 +479,70 @@ artefactos_pendientes(Lista) :-
         ),
         Lista
     ).
+
+% Nombre: tripulantes_pendientes/1
+% Entrada: Ninguna (variable de salida)
+% Salida: Lista de terminos tripulante_pendiente(Tripulante, Modulo, Sistemas, Ruta)
+% Funcion: Recopila los tripulantes objetivo que aun no han sido rescatados
+tripulantes_pendientes(Lista) :-
+    findall(
+        tripulante_pendiente(Tripulante, Modulo, SistemasNecesarios, RutaDesdeJugador),
+        (
+            objetivoT(Tripulante, rescatado),
+            \+ esta_rescatado(Tripulante),
+            tripulante(Tripulante, Modulo, SistemasNecesarios, atrapado),
+            jugador(Actual),
+            ruta(Actual, Modulo, RutaDesdeJugador)
+        ),
+        Lista
+    ).
+
+% Nombre: como_gano/0
+% Entrada: Ninguna
+% Salida: Imprime el plan pendiente para completar el juego
+% Funcion: Muestra artefactos por obtener, sistemas por reparar y tripulantes por rescatar
+como_gano :-
+    sistemas_pendientes(Sistemas),
+    artefactos_pendientes(Artefactos),
+    tripulantes_pendientes(Tripulantes),
+    (   Sistemas = [], Artefactos = [], Tripulantes = []
+    ->  write('Ya cumpliste todas las condiciones. Usa verifica_gane para confirmar.')
+    ;   (   Artefactos \= []
+        ->  write('>> ARTEFACTOS POR OBTENER/USAR:'), nl,
+            forall(
+                member(artefacto_pendiente(Art, ModArt, RutaArt), Artefactos),
+                (
+                    write('   Artefacto : '), write(Art), nl,
+                    write('   Ubicado en: '), write(ModArt), nl,
+                    write('   Ruta      : '), write(RutaArt), nl, nl
+                )
+            )
+        ;   true
+        ),
+        (   Sistemas \= []
+        ->  write('>> SISTEMAS POR REPARAR:'), nl,
+            forall(
+                member(sistema_pendiente(Sys, ModSys, Arts, RutaSys), Sistemas),
+                (
+                    write('   Sistema   : '), write(Sys), nl,
+                    write('   Modulo    : '), write(ModSys), nl,
+                    write('   Requiere  : '), write(Arts), nl,
+                    write('   Ruta      : '), write(RutaSys), nl, nl
+                )
+            )
+        ;   true
+        ),
+        (   Tripulantes \= []
+        ->  write('>> TRIPULANTES POR RESCATAR:'), nl,
+            forall(
+                member(tripulante_pendiente(Trip, ModTrip, SisTrip, RutaTrip), Tripulantes),
+                (
+                    write('   Tripulante: '), write(Trip), nl,
+                    write('   Modulo    : '), write(ModTrip), nl,
+                    write('   Necesita  : '), write(SisTrip), nl,
+                    write('   Ruta      : '), write(RutaTrip), nl, nl
+                )
+            )
+        ;   true
+        )
+    ).
