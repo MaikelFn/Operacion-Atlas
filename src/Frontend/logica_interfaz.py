@@ -16,7 +16,7 @@ frame_rescatar = None
 frame_visitados = None
 
 
-# Ruta actualizada: logica.pl está en ../Backend/ relativo a este archivo
+# Ruta: logica.pl está en ../Backend/ relativo a este archivo
 archivo_logica = Path(__file__).resolve().parent.parent / "Backend" / "logica.pl"
 _prolog = Prolog()
 _prolog.consult(str(archivo_logica).replace("\\", "/"))
@@ -308,6 +308,39 @@ def obtener_descripcion_modulo(modulo):
 
 
 def como_gano():
+    artefactos = []
+    for r in consultar_todos("artefactos_pendientes(Lista), member(artefacto_pendiente(Art,Mod,Ruta), Lista)"):
+        artefactos.append({
+            "artefacto": str(r.get("Art") or ""),
+            "modulo":    str(r.get("Mod") or ""),
+            "ruta":      lista_a_texto(r.get("Ruta")),
+        })
+
+    sistemas = []
+    for r in consultar_todos("sistemas_pendientes(Lista), member(sistema_pendiente(Sys,Mod,Arts,Ruta), Lista)"):
+        sistemas.append({
+            "sistema":    str(r.get("Sys") or ""),
+            "modulo":     str(r.get("Mod") or ""),
+            "artefactos": lista_a_texto(r.get("Arts")),
+            "ruta":       lista_a_texto(r.get("Ruta")),
+        })
+
+    tripulantes = []
+    for r in consultar_todos("tripulantes_pendientes(Lista), member(tripulante_pendiente(Trip,Mod,Sis,Ruta), Lista)"):
+        tripulantes.append({
+            "tripulante": str(r.get("Trip") or ""),
+            "modulo":     str(r.get("Mod") or ""),
+            "sistemas":   lista_a_texto(r.get("Sis")),
+            "ruta":       lista_a_texto(r.get("Ruta")),
+        })
+
+    return {
+        "artefactos":  artefactos,
+        "sistemas":    sistemas,
+        "tripulantes": tripulantes,
+    }
+
+def verificar_gane():
     pass
 
 
@@ -332,4 +365,6 @@ __all__ = [
     "usar",
     "ruta",
     "obtener_modulos",
+    "como_gano",
+    "verificar_gane"
 ]
