@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 from pyswip import Prolog
@@ -17,7 +16,8 @@ frame_rescatar = None
 frame_visitados = None
 
 
-archivo_logica = Path(__file__).resolve().parent / "logica.pl"
+# Ruta actualizada: logica.pl está en ../Backend/ relativo a este archivo
+archivo_logica = Path(__file__).resolve().parent.parent / "Backend" / "logica.pl"
 _prolog = Prolog()
 _prolog.consult(str(archivo_logica).replace("\\", "/"))
 
@@ -141,7 +141,7 @@ def ir_a_visitados():
 
 
 # ==========================
-# Stubs de acciones (no implementadas)
+# Acciones del juego
 # ==========================
 
 def tomar(artefacto):
