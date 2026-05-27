@@ -14,6 +14,7 @@ frame_donde = None
 frame_inventario = None
 frame_rescatar = None
 frame_visitados = None
+frame_como_gano = None
 
 
 # Ruta

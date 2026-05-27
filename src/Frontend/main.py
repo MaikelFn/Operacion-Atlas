@@ -23,6 +23,7 @@ import frames.frame_sistemas    as modulo_frame_sistemas
 import frames.frame_tripulantes as modulo_frame_tripulantes
 import frames.frame_modulos     as modulo_frame_modulos
 import frames.frame_victoria    as modulo_frame_victoria
+import frames.frame_como_gano   as modulo_frame_como_gano
 
 
 # ──────────────────────────────────────────────
@@ -52,6 +53,7 @@ frame_rescatar   = modulo_frame_tripulantes.construir(ventana, on_volver=lambda:
 frame_visitados  = modulo_frame_modulos.construir_visitados(ventana, on_volver=lambda: abrir_juego())
 frame_ruta       = modulo_frame_modulos.construir_ruta(ventana, on_volver=lambda: abrir_juego())
 frame_victoria   = modulo_frame_victoria.construir(ventana, on_volver=lambda: abrir_juego())
+frame_como_gano  = modulo_frame_como_gano.construir(ventana, on_volver=lambda: abrir_juego())
 
 frame_juego.config(width=900, height=550)
 frame_juego.pack_propagate(False)
@@ -70,6 +72,7 @@ modulo_frame_juego.construir(frame_juego, callbacks={
     "reparar":    lambda: abrir_pantalla_reparar(),
     "rescatar":   lambda: abrir_pantalla_rescatar(),
     "visitados":  lambda: abrir_pantalla_visitados(),
+    "como_gano":  lambda: abrir_pantalla_como_gano(),
     "victoria":   lambda: abrir_pantalla_victoria(),
     "menu":       lambda: logica_interfaz.ir_a_menu(),
 })
@@ -93,6 +96,7 @@ logica_interfaz.frame_rescatar   = frame_rescatar
 logica_interfaz.frame_visitados  = frame_visitados
 logica_interfaz.frame_ruta       = frame_ruta
 logica_interfaz.frame_victoria   = frame_victoria
+logica_interfaz.frame_como_gano  = frame_como_gano
 
 
 # NAVEGACIÓN
@@ -158,6 +162,10 @@ def abrir_pantalla_visitados():
     actualizar_estado()
     modulo_frame_modulos.actualizar_visitados()
     logica_interfaz.ir_a_visitados()
+
+
+def abrir_pantalla_como_gano():
+    logica_interfaz.mostrar_frame(frame_como_gano)
 
 
 def abrir_pantalla_victoria():
