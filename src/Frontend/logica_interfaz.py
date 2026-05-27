@@ -3,7 +3,7 @@ from pathlib import Path
 from pyswip import Prolog
 
 
-# Referencias a frames — se asignan desde main.py
+# Referencias a frames
 frame_activo = None
 frame_menu = None
 frame_juego = None
@@ -16,7 +16,7 @@ frame_rescatar = None
 frame_visitados = None
 
 
-# Ruta: logica.pl está en ../Backend/ relativo a este archivo
+# Ruta
 archivo_logica = Path(__file__).resolve().parent.parent / "Backend" / "logica.pl"
 _prolog = Prolog()
 _prolog.consult(str(archivo_logica).replace("\\", "/"))
@@ -80,6 +80,24 @@ def obtener_estado_jugador():
         "tripulantes_atrapados": tripulantes_atrapados,
     }
 
+def obtener_tripulantes_objetivo_atrapados():
+    """
+    Retorna solo los tripulantes atrapados que son condición de victoria.
+    """
+    objetivos = set()
+    for r in consultar_todos("objetivoT(Tripulante, rescatado)"):
+        objetivos.add(str(r.get("Tripulante") or ""))
+
+    tripulantes = []
+    for r in consultar_todos("tripulante(Tripulante, Modulo, Sistemas, atrapado)"):
+        nombre = str(r.get("Tripulante") or "")
+        if nombre in objetivos:
+            tripulantes.append({
+                "nombre": nombre,
+                "modulo": str(r.get("Modulo") or ""),
+                "sistemas_necesarios": lista_a_texto(r.get("Sistemas")),
+            })
+    return tripulantes
 
 def mostrar_frame(frame):
     global frame_activo
@@ -140,9 +158,7 @@ def ir_a_visitados():
         mostrar_frame(frame_visitados)
 
 
-# ==========================
 # Acciones del juego
-# ==========================
 
 def tomar(artefacto):
     return consultar_uno(f"tomar({artefacto})") is not None
@@ -340,8 +356,41 @@ def como_gano():
         "tripulantes": tripulantes,
     }
 
-def verificar_gane():
-    pass
+def verifica_gane():
+    """
+    Verifica si se alcanzó la condición de victoria.
+    
+    Retorna: 
+      - True si gano/0 se cumple, junto con un veredicto con el estado final
+      - False si no se cumple la condición de victoria
+    """
+    resultado = consultar_uno("verifica_gane")
+    
+    if resultado is not None:
+        # Victoria alcanzada - recopilar estado final
+        artefactos_logrados = que_tengo()
+        visitados = modulos_visitados()
+        
+        sistemas_rep = []
+        for resultado_sis in consultar_todos("sistemas_reparados(Lista), member(X, Lista)"):
+            sistema = str(resultado_sis.get("X") or "")
+            if sistema:
+                sistemas_rep.append(sistema)
+        
+        tripulantes_resc = []
+        for resultado_trip in consultar_todos("tripulantes_rescatados(Lista), member(X, Lista)"):
+            tripulante = str(resultado_trip.get("X") or "")
+            if tripulante:
+                tripulantes_resc.append(tripulante)
+        
+        return True, {
+            "artefactos": artefactos_logrados,
+            "visitados": visitados,
+            "sistemas_reparados": sistemas_rep,
+            "tripulantes_rescatados": tripulantes_resc,
+        }
+    
+    return False, None
 
 
 __all__ = [
@@ -366,5 +415,5 @@ __all__ = [
     "ruta",
     "obtener_modulos",
     "como_gano",
-    "verificar_gane"
+    "verifica_gane"
 ]

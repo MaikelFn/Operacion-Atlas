@@ -22,6 +22,7 @@ import frames.frame_artefactos  as modulo_frame_artefactos
 import frames.frame_sistemas    as modulo_frame_sistemas
 import frames.frame_tripulantes as modulo_frame_tripulantes
 import frames.frame_modulos     as modulo_frame_modulos
+import frames.frame_victoria    as modulo_frame_victoria
 
 
 # ──────────────────────────────────────────────
@@ -50,6 +51,7 @@ frame_reparar    = modulo_frame_sistemas.construir(ventana, on_volver=lambda: ab
 frame_rescatar   = modulo_frame_tripulantes.construir(ventana, on_volver=lambda: abrir_juego())
 frame_visitados  = modulo_frame_modulos.construir_visitados(ventana, on_volver=lambda: abrir_juego())
 frame_ruta       = modulo_frame_modulos.construir_ruta(ventana, on_volver=lambda: abrir_juego())
+frame_victoria   = modulo_frame_victoria.construir(ventana, on_volver=lambda: abrir_juego())
 
 frame_juego.config(width=900, height=550)
 frame_juego.pack_propagate(False)
@@ -68,7 +70,7 @@ modulo_frame_juego.construir(frame_juego, callbacks={
     "reparar":    lambda: abrir_pantalla_reparar(),
     "rescatar":   lambda: abrir_pantalla_rescatar(),
     "visitados":  lambda: abrir_pantalla_visitados(),
-    "victoria":   lambda: None,
+    "victoria":   lambda: abrir_pantalla_victoria(),
     "menu":       lambda: logica_interfaz.ir_a_menu(),
 })
 
@@ -90,11 +92,10 @@ logica_interfaz.frame_inventario = frame_inventario
 logica_interfaz.frame_rescatar   = frame_rescatar
 logica_interfaz.frame_visitados  = frame_visitados
 logica_interfaz.frame_ruta       = frame_ruta
+logica_interfaz.frame_victoria   = frame_victoria
 
 
-# ──────────────────────────────────────────────
 # NAVEGACIÓN
-# ──────────────────────────────────────────────
 
 def actualizar_estado():
     modulo_frame_estado.actualizar(texto_estado)
@@ -159,14 +160,17 @@ def abrir_pantalla_visitados():
     logica_interfaz.ir_a_visitados()
 
 
-# ──────────────────────────────────────────────
+def abrir_pantalla_victoria():
+    modulo_frame_victoria.actualizar()
+    logica_interfaz.mostrar_frame(frame_victoria)
+
+
 # INICIO
-# ──────────────────────────────────────────────
 
 logica_interfaz.inicializar_juego()
 actualizar_estado()
 
-# Registrar frame_menu en logica_interfaz (se construye luego de los otros)
+# Registrar frame_menu en logica_interfaz
 logica_interfaz.frame_menu = frame_menu_principal
 logica_interfaz.mostrar_frame(frame_menu_principal)
 

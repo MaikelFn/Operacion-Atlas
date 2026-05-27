@@ -59,9 +59,9 @@ def actualizar(texto_estado):
     estado = logica_interfaz.obtener_estado_jugador()
 
     # Cabecera
-    texto_estado.insert("end", "╔══════════════════════════════╗\n", "separador")
-    texto_estado.insert("end", "║           ESTADO             ║\n", "titulo")
-    texto_estado.insert("end", "╚══════════════════════════════╝\n", "separador")
+    texto_estado.insert("end", "━━━━━━━━━━━━━━━━━━━\n", "separador")
+    texto_estado.insert("end", "           ESTADO             \n", "titulo")
+    texto_estado.insert("end", "━━━━━━━━━━━━━━━━━━━\n", "separador")
     texto_estado.insert("end", "\n", "")
 
     # Ubicacion

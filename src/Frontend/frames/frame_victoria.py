@@ -1,8 +1,8 @@
 """
 frame_victoria.py
-Pantalla de victoria y guia de como ganar:
+Pantalla de victoria y guía de como ganar:
 muestra el estado de victoria del jugador con el resumen completo,
-o bien el plan de pendientes si aun no ha ganado.
+o bien el plan de pendientes si aún no ha ganado.
 """
 
 import tkinter as tk
@@ -10,13 +10,389 @@ import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-_panel_contenido = None
+_frame_contenedor = None
+_texto_victoria = None
+_boton_volver = None
+_callback_volver = None
 
 
-def construir():
-    pass
+def construir(ventana, on_volver=None):
+    """
+    Construye el frame de victoria.
+
+    :param ventana: Ventana principal
+    :param on_volver: Callback para el botón de volver
+    :return: Frame contenedor del panel de victoria
+    """
+
+    global _frame_contenedor
+    global _texto_victoria
+    global _callback_volver
+    global _boton_volver
+
+    _callback_volver = on_volver
+
+    # Frame principal
+    _frame_contenedor = tk.Frame(
+        ventana,
+        bg=estilos.COLOR_FONDO
+    )
+    _frame_contenedor.config(width=900, height=550)
+    _frame_contenedor.pack_propagate(False)
+
+    # ÁREA SCROLLABLE
+    contenedor_scroll = tk.Frame(_frame_contenedor, bg=estilos.COLOR_FONDO)
+    contenedor_scroll.pack(fill="both", expand=True, padx=25, pady=(15, 0))
+
+    scrollbar = tk.Scrollbar(contenedor_scroll)
+    scrollbar.pack(side="right", fill="y")
+
+    _texto_victoria = tk.Text(
+        contenedor_scroll,
+        bg=estilos.COLOR_FONDO,
+        fg=estilos.COLOR_TEXTO,
+        relief="flat",
+        bd=0,
+        wrap="word",
+        font=estilos.TIPOGRAFIA_NORMAL,
+        highlightthickness=0,
+        cursor="arrow",
+        padx=20,
+        pady=15,
+        yscrollcommand=scrollbar.set,
+    )
+    scrollbar.config(command=_texto_victoria.yview)
+
+    # TAGS DE ESTILO
+    estilos.configurar_tags_victoria(_texto_victoria)
+    _texto_victoria.pack(
+        side="left",
+        fill="both",
+        expand=True
+    )
+
+    # BOTÓN VOLVER
+    _boton_volver = tk.Button(
+        _frame_contenedor,
+        text="Volver al Juego",
+        pady=12,
+        command=lambda: _volver(),
+        **estilos.estilo_boton(
+            color_fg=estilos.COLOR_TEXTO_OSCURO
+        )
+    )
+    _boton_volver.pack(
+        pady=(8, 14)
+    )
+
+    return _frame_contenedor
+
+
+def _obtener_historial_ruta():
+    """
+    Consulta el historial de ruta directamente desde Prolog.
+    Retorna una lista de strings con cada evento registrado.
+    """
+    resultado = logica_interfaz.consultar_uno("historial_ruta(Lista)") or {}
+    valor = resultado.get("Lista")
+    if valor is None:
+        return []
+    if isinstance(valor, list):
+        return [str(e) for e in valor]
+    return [str(valor)]
 
 
 def actualizar():
-    pass
+    """
+    Refresca el contenido del panel de victoria
+    consultando el estado en Prolog.
+    """
 
+    global _texto_victoria
+
+    if _texto_victoria is None:
+        return
+
+    _texto_victoria.config(state="normal")
+    _texto_victoria.delete("1.0", "end")
+
+    exito, estado = logica_interfaz.verifica_gane()
+
+    # VICTORIA ALCANZADA
+    if exito:
+        _texto_victoria.insert(
+            "end",
+            "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+            "separador"
+        )
+        _texto_victoria.insert(
+            "end",
+            "¡CONDICIÓN DE VICTORIA ALCANZADA!\n",
+            "victoria"
+        )
+        _texto_victoria.insert(
+            "end",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n",
+            "separador"
+        )
+
+        # RESUMEN FINAL
+        _texto_victoria.insert(
+            "end",
+            "» RESUMEN FINAL\n",
+            "seccion"
+        )
+
+        # ARTEFACTOS
+        _texto_victoria.insert(
+            "end",
+            "\n  Artefactos Logrados:\n",
+            "item"
+        )
+        artefactos = (estado or {}).get("artefactos") or []
+        if artefactos:
+            for artefacto in artefactos:
+                _texto_victoria.insert(
+                    "end",
+                    f"    ✓ {artefacto}\n",
+                    "exito"
+                )
+        else:
+            _texto_victoria.insert(
+                "end",
+                "    (ninguno)\n",
+                "item"
+            )
+
+        # MÓDULOS
+        visitados = (estado or {}).get("visitados") or []
+        _texto_victoria.insert(
+            "end",
+            f"\n  Módulos Visitados: {len(visitados)}\n",
+            "item"
+        )
+        for modulo in visitados[:10]:
+            _texto_victoria.insert(
+                "end",
+                f"    ✓ {modulo}\n",
+                "exito"
+            )
+        if len(visitados) > 10:
+            restantes = len(visitados) - 10
+            _texto_victoria.insert(
+                "end",
+                f"    ... y {restantes} más\n",
+                "item"
+            )
+
+        # SISTEMAS
+        _texto_victoria.insert(
+            "end",
+            "\n  Sistemas Reparados:\n",
+            "item"
+        )
+        sistemas = (estado or {}).get("sistemas_reparados") or []
+        if sistemas:
+            for sistema in sistemas:
+                _texto_victoria.insert(
+                    "end",
+                    f"    ✓ {sistema}\n",
+                    "exito"
+                )
+        else:
+            _texto_victoria.insert(
+                "end",
+                "    (ninguno)\n",
+                "item"
+            )
+
+        # TRIPULANTES
+        _texto_victoria.insert(
+            "end",
+            "\n  Tripulación Rescatada:\n",
+            "item"
+        )
+        tripulantes = (estado or {}).get("tripulantes_rescatados") or []
+        if tripulantes:
+            for tripulante in tripulantes:
+                _texto_victoria.insert(
+                    "end",
+                    f"    ✓ {tripulante}\n",
+                    "exito"
+                )
+        else:
+            _texto_victoria.insert(
+                "end",
+                "    (ninguno)\n",
+                "item"
+            )
+
+        # RUTA REALIZADA
+        _texto_victoria.insert(
+            "end",
+            "\n  Ruta Realizada:\n",
+            "item"
+        )
+        historial = _obtener_historial_ruta()
+        if historial:
+            for evento in historial:
+                _texto_victoria.insert(
+                    "end",
+                    f"    → {evento}\n",
+                    "item"
+                )
+        else:
+            _texto_victoria.insert(
+                "end",
+                "    (sin historial)\n",
+                "item"
+            )
+
+        # MENSAJE FINAL
+        _texto_victoria.insert(
+            "end",
+            "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+            "separador"
+        )
+        _texto_victoria.insert(
+            "end",
+            "¡Has completado la misión con éxito!\n",
+            "victoria"
+        )
+        _texto_victoria.insert(
+            "end",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+            "separador"
+        )
+
+    # VICTORIA PENDIENTE
+    else:
+        estado_actual = logica_interfaz.obtener_estado_jugador()
+        sistemas_en_falla = estado_actual.get(
+            "sistemas_en_falla",
+            []
+        )
+        tripulantes_atrapados = logica_interfaz.obtener_tripulantes_objetivo_atrapados()
+        _texto_victoria.insert(
+            "end",
+            "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+            "separador"
+        )
+        _texto_victoria.insert(
+            "end",
+            "VICTORIA PENDIENTE\n",
+            "pendiente"
+        )
+        _texto_victoria.insert(
+            "end",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n",
+            "separador"
+        )
+
+        # OBJETIVOS
+        _texto_victoria.insert(
+            "end",
+            "» OBJETIVOS PENDIENTES\n",
+            "seccion"
+        )
+
+        # SISTEMAS EN FALLA
+        if sistemas_en_falla:
+            _texto_victoria.insert(
+                "end",
+                f"\n  Sistemas en Falla: {len(sistemas_en_falla)}\n",
+                "item"
+            )
+            for sistema_info in sistemas_en_falla:
+                modulo = sistema_info.get(
+                    "modulo",
+                    "desconocido"
+                )
+                sistema = sistema_info.get(
+                    "sistema",
+                    "desconocido"
+                )
+                artefactos = sistema_info.get(
+                    "artefactos",
+                    []
+                )
+                _texto_victoria.insert(
+                    "end",
+                    f"    ✗ {sistema} (en {modulo})\n",
+                    "fallo"
+                )
+                if artefactos:
+                    _texto_victoria.insert(
+                        "end",
+                        f"      Requiere: {', '.join(artefactos)}\n",
+                        "item"
+                    )
+
+        # TRIPULANTES ATRAPADOS
+        if tripulantes_atrapados:
+            _texto_victoria.insert(
+                "end",
+                f"\n  Tripulantes Atrapados: {len(tripulantes_atrapados)}\n",
+                "item"
+            )
+            for tripulante_info in tripulantes_atrapados:
+                nombre = tripulante_info.get(
+                    "nombre",
+                    "desconocido"
+                )
+                modulo = tripulante_info.get(
+                    "modulo",
+                    "desconocido"
+                )
+                sistemas = tripulante_info.get(
+                    "sistemas_necesarios",
+                    []
+                )
+                _texto_victoria.insert(
+                    "end",
+                    f"    ✗ {nombre} (en {modulo})\n",
+                    "fallo"
+                )
+                if sistemas:
+                    _texto_victoria.insert(
+                        "end",
+                        f"      Necesita: {', '.join(sistemas)}\n",
+                        "item"
+                    )
+
+        # VALIDACIÓN FINAL
+        if not sistemas_en_falla and not tripulantes_atrapados:
+            _texto_victoria.insert(
+                "end",
+                "\n¡Verifica nuevamente para confirmar la victoria!\n",
+                "pendiente"
+            )
+
+        # MENSAJE FINAL
+        _texto_victoria.insert(
+            "end",
+            "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+            "separador"
+        )
+        _texto_victoria.insert(
+            "end",
+            "Continúa cumpliendo los objetivos...\n",
+            "pendiente"
+        )
+        _texto_victoria.insert(
+            "end",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+            "separador"
+        )
+
+    _texto_victoria.config(state="disabled")
+    _texto_victoria.yview_moveto(0)
+
+
+def _volver():
+    """
+    Ejecuta el callback de volver.
+    """
+
+    if _callback_volver:
+        _callback_volver()
