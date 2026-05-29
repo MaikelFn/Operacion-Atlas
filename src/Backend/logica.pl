@@ -39,7 +39,7 @@ inicializar_juego :-
 % Nombre: esta_conectado/2
 % Entrada: Dos modulos
 % Salida: Verdadero si existe conexion entre ambos modulos
-% Funcion: Determina si hay enlace directo entre X y Y (bidireccional)
+% Funcion: Determina si hay enlace directo entre dos modulos (bidireccional)
 % Autor: Maikel Flores
 esta_conectado(X, Y) :-
     enlace(X, Y).
@@ -440,115 +440,201 @@ gano :-
     cumple_objetivos_tripulantes.
 
 % =========================================
-% COMO GANO
+% PLANIFICADOR DE SOLUCION
 % =========================================
 
-% Nombre: pasos_para_artefacto/4
-% Entrada: Artefacto, ModuloActual, ModuloSiguiente, Pasos
-% Salida: Lista de pasos [ir?, tomar, usar] para un artefacto pendiente
-% Funcion: Si el artefacto no fue usado, genera pasos para ir a buscarlo y usarlo.
-%          ModuloSiguiente unifica con el modulo donde queda el jugador tras los pasos.
-pasos_para_artefacto(Artefacto, ModuloActual, ModuloSig, Pasos) :-
-    \+ uso(Artefacto),
-    artefacto(Artefacto, ModuloArtefacto),
-    (   ModuloActual \= ModuloArtefacto
-    ->  Pasos = [ir(ModuloArtefacto), tomar(Artefacto), usar(Artefacto)],
-        ModuloSig = ModuloArtefacto
-    ;   Pasos = [tomar(Artefacto), usar(Artefacto)],
-        ModuloSig = ModuloActual
+% Nombre: simulacion_posee_artefacto/2
+% Entrada: Artefacto, Lista de artefactos usados
+% Salida: Verdadero si el artefacto esta en la lista de usados
+% Funcion: Verifica en estado simulado si el jugador posee un artefacto
+% Autor: Tayler Wynta
+simulacion_posee_artefacto(Artefacto, ArtefactosUsados) :- member(Artefacto, ArtefactosUsados).
+
+% Nombre: simulacion_puede_entrar/4
+% Entrada: Modulo, Artefactos usados, Sistemas reparados, Modulos visitados
+% Salida: Verdadero si se cumplen todas las restricciones de entrada
+% Funcion: Verifica las 3 restricciones de entrada en estado simulado
+% Autor: Tayler Wynta
+simulacion_puede_entrar(Modulo, ArtefactosUsados, SistemasReparados, ModulosVisitados) :-
+    (   necesita(Modulo, ArtefactoRequerido)
+    ->  member(ArtefactoRequerido, ArtefactosUsados)
+    ;   true
+    ),
+    (   necesitaEstado(Modulo, SistemaRequerido, restaurado)
+    ->  member(SistemaRequerido, SistemasReparados)
+    ;   true
+    ),
+    (   pasoPrevio(Modulo, ModuloRequerido)
+    ->  member(ModuloRequerido, ModulosVisitados)
+    ;   true
     ).
 
-pasos_para_artefacto(Artefacto, ModuloActual, ModuloActual, []) :-
-    uso(Artefacto).
+% Nombre: pasos_obtener_artefacto/4
+% Entrada: Artefacto, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para obtener y usar el artefacto
+% Funcion: Calcula los pasos minimos para que un artefacto este disponible
+% Autor: Tayler Wynta
+pasos_obtener_artefacto(Art, estado(Mod, Usados, SisRep, Vis),
+                             estado(Mod, Usados, SisRep, Vis), []) :-
+    member(Art, Usados), !.
 
-% Nombre: pasos_para_lista_artefactos/4
-% Entrada: ListaArtefactos, ModuloActual, ModuloFinal, Pasos
-% Salida: Lista de pasos para obtener y usar todos los artefactos de la lista
-% Funcion: Recursion sobre cada artefacto requerido, acumulando pasos en orden
-pasos_para_lista_artefactos([], Modulo, Modulo, []).
-pasos_para_lista_artefactos([Art|Resto], ModuloActual, ModuloFinal, Pasos) :-
-    pasos_para_artefacto(Art, ModuloActual, ModuloTras, PasosArt),
-    pasos_para_lista_artefactos(Resto, ModuloTras, ModuloFinal, PasosResto),
+pasos_obtener_artefacto(Art, Estado0, EstadoFinal, Pasos) :-
+    \+ ( Estado0 = estado(_, Usados0, _, _), member(Art, Usados0) ),
+    artefacto(Art, ModArt),
+    pasos_entrar_modulo(ModArt, Estado0, Estado1, PasosEntrada),
+    Estado1 = estado(ModArt, Usados1, SisRep1, Vis1),
+    append(Usados1, [Art], Usados2),
+    EstadoFinal = estado(ModArt, Usados2, SisRep1, Vis1),
+    append(PasosEntrada, [tomar(Art), usar(Art)], Pasos).
+
+% Nombre: pasos_entrar_modulo/4
+% Entrada: Modulo destino, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para navegar hacia un modulo
+% Funcion: Navega desde el modulo actual hasta destino respetando restricciones
+% Autor: Tayler Wynta
+pasos_entrar_modulo(Destino, estado(Destino, ArtefactosUsados, SistemasReparados, ModulosVisitados),
+                              estado(Destino, ArtefactosUsados, SistemasReparados, ModulosVisitados), []) :- !.
+
+pasos_entrar_modulo(Destino, Estado0, EstadoFinal, Pasos) :-
+    Estado0 = estado(ModActual, _, _, _),
+    ModActual \= Destino,
+    ruta(ModActual, Destino, RutaCompleta),
+    RutaCompleta = [_|NodosSiguientes],
+    pasos_recorrer_nodos(NodosSiguientes, Estado0, EstadoFinal, Pasos).
+
+% Nombre: pasos_recorrer_nodos/4
+% Entrada: Lista de nodos, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para recorrer una secuencia de nodos
+% Funcion: Itera nodo a nodo resolviendo prerrequisitos en cada movimiento
+% Autor: Tayler Wynta
+pasos_recorrer_nodos([], EstadoActual, EstadoActual, []).
+pasos_recorrer_nodos([Nodo|Resto], Estado0, EstadoFinal, Pasos) :-
+    Estado0 = estado(_, Usados0, _, _),
+    (   necesita(Nodo, ArtReq), \+ member(ArtReq, Usados0)
+    ->  pasos_obtener_artefacto(ArtReq, Estado0, EstadoMedio, PasosArt)
+    ;   EstadoMedio = Estado0, PasosArt = []
+    ),
+    EstadoMedio = estado(ModActualMedio, UsadosMedio, SisRepMedio, VisMedio),
+    simulacion_puede_entrar(Nodo, UsadosMedio, SisRepMedio, VisMedio),
+    (   ModActualMedio \= Nodo
+    ->  ruta(ModActualMedio, Nodo, RutaANodo),
+        RutaANodo = [_|SaltosANodo],
+        pasos_saltos_directos(SaltosANodo, EstadoMedio, EstadoEnNodo, PasosSaltos)
+    ;   EstadoEnNodo = EstadoMedio, PasosSaltos = []
+    ),
+    EstadoEnNodo = estado(_, UsadosEnNodo, SisRepEnNodo, VisEnNodo),
+    (member(Nodo, VisEnNodo) -> VisSig = VisEnNodo ; VisSig = [Nodo|VisEnNodo]),
+    EstadoTras = estado(Nodo, UsadosEnNodo, SisRepEnNodo, VisSig),
+    pasos_recorrer_nodos(Resto, EstadoTras, EstadoFinal, PasosResto),
+    append(PasosArt, PasosSaltos, PasosHastaNodo),
+    append(PasosHastaNodo, PasosResto, Pasos).
+
+% Nombre: pasos_saltos_directos/4
+% Entrada: Lista de nodos, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos de movimiento directo entre nodos
+% Funcion: Genera ir/1 para cada salto de una ruta calculada
+% Autor: Tayler Wynta
+pasos_saltos_directos([], EstadoActual, EstadoActual, []).
+pasos_saltos_directos([Nodo|NodosRestantes], estado(_, ArtefactosUsados, SistemasReparados, ModulosVisitados), EstadoFinal, [ir(Nodo)|PasosRestantes]) :-
+    (member(Nodo, ModulosVisitados) -> ModulosVisitadosActualizados = ModulosVisitados ; ModulosVisitadosActualizados = [Nodo|ModulosVisitados]),
+    pasos_saltos_directos(NodosRestantes, estado(Nodo, ArtefactosUsados, SistemasReparados, ModulosVisitadosActualizados), EstadoFinal, PasosRestantes).
+
+% Nombre: pasos_reparar_sistema/4
+% Entrada: Sistema, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para reparar un sistema completo
+% Funcion: Obtiene artefactos necesarios y genera pasos para reparacion
+% Autor: Tayler Wynta
+pasos_reparar_sistema(Sistema, Estado0, EstadoFinal, Pasos) :-
+    \+ esta_reparado(Sistema),
+    sistema(ModSis, Sistema, Artefactos, fallo),
+    pasos_obtener_lista_artefactos(Artefactos, Estado0, EstadoTras, PasosArts),
+    pasos_entrar_modulo(ModSis, EstadoTras, EstadoEnSis, PasosMover),
+    EstadoEnSis = estado(ModSis, Usados1, SisRep1, Vis1),
+    append(SisRep1, [Sistema], SisRep2),
+    EstadoFinal = estado(ModSis, Usados1, SisRep2, Vis1),
+    append(PasosArts, PasosMover, PasosBase),
+    append(PasosBase, [reparar(Sistema)], Pasos).
+
+% Nombre: pasos_obtener_lista_artefactos/4
+% Entrada: Lista de artefactos, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para obtener todos los artefactos de una lista
+% Funcion: Permuta el orden de recoleccion para generar variantes
+% Autor: Tayler Wynta
+pasos_obtener_lista_artefactos(Lista, Estado0, EstadoFinal, Pasos) :-
+    permutation(Lista, ListaOrden),
+    pasos_obtener_lista_artefactos_ord(ListaOrden, Estado0, EstadoFinal, Pasos).
+
+% Nombre: pasos_obtener_lista_artefactos_ord/4
+% Entrada: Lista ordenada de artefactos, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para obtener artefactos en orden especifico
+% Funcion: Recursivamente obtiene cada artefacto de la lista
+% Autor: Tayler Wynta
+pasos_obtener_lista_artefactos_ord([], EstadoActual, EstadoActual, []).
+pasos_obtener_lista_artefactos_ord([Art|Resto], E0, EFinal, Pasos) :-
+    pasos_obtener_artefacto(Art, E0, E1, PasosArt),
+    pasos_obtener_lista_artefactos_ord(Resto, E1, EFinal, PasosResto),
     append(PasosArt, PasosResto, Pasos).
 
-% Nombre: pasos_para_sistema/4
-% Entrada: Sistema, ModuloActual, ModuloFinal, Pasos
-% Salida: Lista de pasos para reparar el sistema desde ModuloActual
-% Funcion: Genera pasos para conseguir artefactos, ir al modulo y reparar
-pasos_para_sistema(Sistema, ModuloActual, ModuloFinal, Pasos) :-
-    \+ esta_reparado(Sistema),
-    sistema(ModuloSistema, Sistema, Artefactos, fallo),
-    pasos_para_lista_artefactos(Artefactos, ModuloActual, ModuloTras, PasosArts),
-    (   ModuloTras \= ModuloSistema
-    ->  PasosMover = [ir(ModuloSistema)]
-    ;   PasosMover = []
-    ),
-    append(PasosArts, PasosMover, PasosBase),
-    append(PasosBase, [reparar(Sistema)], Pasos),
-    ModuloFinal = ModuloSistema.
+% Nombre: pasos_rescatar_tripulante/4
+% Entrada: Tripulante, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para rescatar un tripulante
+% Funcion: Navega hacia el tripulante y genera accion de rescate
+% Autor: Tayler Wynta
+pasos_rescatar_tripulante(Trip, Estado0, EstadoFinal, Pasos) :-
+    \+ esta_rescatado(Trip),
+    tripulante(Trip, ModTrip, _, atrapado),
+    pasos_entrar_modulo(ModTrip, Estado0, EstadoFinal, PasosMover),
+    append(PasosMover, [rescatar(Trip)], Pasos).
 
-% Nombre: pasos_para_sistemas/4
-% Entrada: ListaSistemas, ModuloActual, ModuloFinal, Pasos
-% Salida: Lista de pasos para reparar todos los sistemas pendientes en orden
-% Funcion: Recursion sobre cada sistema, encadenando el modulo final como siguiente inicio
-pasos_para_sistemas([], Modulo, Modulo, []).
-pasos_para_sistemas([Sys|Resto], ModuloActual, ModuloFinal, Pasos) :-
-    pasos_para_sistema(Sys, ModuloActual, ModuloTras, PasosSys),
-    pasos_para_sistemas(Resto, ModuloTras, ModuloFinal, PasosResto),
+% Nombre: pasos_para_sistemas_ord/4
+% Entrada: Lista ordenada de sistemas, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para reparar sistemas en orden especifico
+% Funcion: Recursivamente repara cada sistema de la lista
+% Autor: Tayler Wynta
+pasos_para_sistemas_ord([], EstadoActual, EstadoActual, []).
+pasos_para_sistemas_ord([Sys|Resto], E0, EFinal, Pasos) :-
+    pasos_reparar_sistema(Sys, E0, E1, PasosSys),
+    pasos_para_sistemas_ord(Resto, E1, EFinal, PasosResto),
     append(PasosSys, PasosResto, Pasos).
 
-% Nombre: pasos_para_tripulante/4
-% Entrada: Tripulante, ModuloActual, ModuloFinal, Pasos
-% Salida: Lista de pasos para rescatar al tripulante desde ModuloActual
-% Funcion: Genera pasos para ir al modulo del tripulante y rescatarlo
-pasos_para_tripulante(Tripulante, ModuloActual, ModuloFinal, Pasos) :-
-    \+ esta_rescatado(Tripulante),
-    tripulante(Tripulante, ModuloTripulante, _, atrapado),
-    (   ModuloActual \= ModuloTripulante
-    ->  Pasos = [ir(ModuloTripulante), rescatar(Tripulante)]
-    ;   Pasos = [rescatar(Tripulante)]
-    ),
-    ModuloFinal = ModuloTripulante.
-
-% Nombre: pasos_para_tripulantes/4
-% Entrada: ListaTripulantes, ModuloActual, ModuloFinal, Pasos
-% Salida: Lista de pasos para rescatar todos los tripulantes pendientes en orden
-% Funcion: Recursion sobre cada tripulante, encadenando posicion tras cada rescate
-pasos_para_tripulantes([], Modulo, Modulo, []).
-pasos_para_tripulantes([Trip|Resto], ModuloActual, ModuloFinal, Pasos) :-
-    pasos_para_tripulante(Trip, ModuloActual, ModuloTras, PasosTrip),
-    pasos_para_tripulantes(Resto, ModuloTras, ModuloFinal, PasosResto),
+% Nombre: pasos_para_tripulantes_ord/4
+% Entrada: Lista ordenada de tripulantes, Estado inicial, resultado, Pasos generados
+% Salida: Genera pasos para rescatar tripulantes en orden especifico
+% Funcion: Recursivamente rescata cada tripulante de la lista
+% Autor: Tayler Wynta
+pasos_para_tripulantes_ord([], EstadoActual, EstadoActual, []).
+pasos_para_tripulantes_ord([Trip|Resto], E0, EFinal, Pasos) :-
+    pasos_rescatar_tripulante(Trip, E0, E1, PasosTrip),
+    pasos_para_tripulantes_ord(Resto, E1, EFinal, PasosResto),
     append(PasosTrip, PasosResto, Pasos).
 
 % Nombre: generar_plan/1
 % Entrada: Ninguna (variable de salida)
-% Salida: Lista de pasos del tipo ir/1, tomar/1, usar/1, reparar/1, rescatar/1
-% Funcion: Genera un plan completo usando backtracking sobre el orden de sistemas y tripulantes.
-%          El backtracking de Prolog explora distintas permutaciones, generando soluciones distintas.
+% Salida: Un plan completo de pasos para ganar
+% Funcion: Genera un plan coherente permutando ordenes de sistemas y tripulantes
+% Autor: Tayler Wynta
 generar_plan(Plan) :-
     jugador(ModuloInicial),
+    usados(UsadosIni),
+    EstadoIni = estado(ModuloInicial, UsadosIni, [], [ModuloInicial]),
     findall(S, (objetivoS(S, restaurado), \+ esta_reparado(S)), Sistemas),
     findall(T, (objetivoT(T, rescatado), \+ esta_rescatado(T)), Tripulantes),
-    permutation(Sistemas, OrdenSistemas),
+    permutation(Sistemas,    OrdenSistemas),
     permutation(Tripulantes, OrdenTripulantes),
-    pasos_para_sistemas(OrdenSistemas, ModuloInicial, ModuloTras, PasosSistemas),
-    pasos_para_tripulantes(OrdenTripulantes, ModuloTras, _, PasosTripulantes),
-    append(PasosSistemas, PasosTripulantes, Plan).
+    pasos_para_sistemas_ord(OrdenSistemas,    EstadoIni,  EstadoTras, PasosSistemas),
+    pasos_para_tripulantes_ord(OrdenTripulantes, EstadoTras, _,          PasosTripulantes),
+    append(PasosSistemas, PasosTripulantes, Plan),
+    Plan \= [].
 
 % Nombre: como_gano/1
 % Entrada: Ninguna (variable de salida)
-% Salida: Lista de hasta 2 planes distintos
-% Funcion: Obtiene hasta 2 soluciones distintas usando findall sobre generar_plan
+% Salida: Lista con todas las soluciones encontradas
+% Funcion: Genera y devuelve todos los planes posibles para ganar
+% Autor: Tayler Wynta
 como_gano(Planes) :-
     findall(Plan, generar_plan(Plan), TodosPlanes),
-    list_to_set(TodosPlanes, PlanesUnicos),
-    (   PlanesUnicos = []
-    ->  Planes = []
-    ;   length(PlanesUnicos, N),
-        Max is min(N, 2),
-        length(Planes, Max),
-        append(Planes, _, PlanesUnicos)
-    ).
+    list_to_set(TodosPlanes, Planes).
+
 
 % =========================================
 % VERIFICACION DE VICTORIA

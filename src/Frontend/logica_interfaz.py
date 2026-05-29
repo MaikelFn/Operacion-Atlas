@@ -423,5 +423,5 @@ __all__ = [
     "obtener_modulos",
     "obtener_enlaces",
     "como_gano",
-    "verifica_gane"
+    "verifica_gane",
 ]

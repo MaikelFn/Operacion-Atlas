@@ -104,7 +104,7 @@ def actualizar():
     """
     Refresca el contenido consultando como_gano en Prolog a traves
     de logica_interfaz.como_gano().
-    Muestra hasta 2 planes paso a paso.
+    Muestra hasta 10 planes paso a paso.
     """
     if _texto is None:
         return
