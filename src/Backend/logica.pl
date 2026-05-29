@@ -443,109 +443,116 @@ gano :-
 % COMO GANO
 % =========================================
 
-% Nombre: sistemas_pendientes/1
-% Entrada: Ninguna (variable de salida)
-% Salida: Lista de terminos sistema_pendiente(Sistema, Modulo, Artefactos, Ruta)
-% Funcion: Recopila los sistemas objetivo que aun no han sido reparados
-sistemas_pendientes(Lista) :-
-    findall(
-        sistema_pendiente(Sistema, Modulo, Artefactos, RutaDesdeJugador),
-        (
-            objetivoS(Sistema, restaurado),
-            \+ esta_reparado(Sistema),
-            sistema(Modulo, Sistema, Artefactos, fallo),
-            jugador(Actual),
-            ruta(Actual, Modulo, RutaDesdeJugador)
-        ),
-        Lista
+% Nombre: pasos_para_artefacto/4
+% Entrada: Artefacto, ModuloActual, ModuloSiguiente, Pasos
+% Salida: Lista de pasos [ir?, tomar, usar] para un artefacto pendiente
+% Funcion: Si el artefacto no fue usado, genera pasos para ir a buscarlo y usarlo.
+%          ModuloSiguiente unifica con el modulo donde queda el jugador tras los pasos.
+pasos_para_artefacto(Artefacto, ModuloActual, ModuloSig, Pasos) :-
+    \+ uso(Artefacto),
+    artefacto(Artefacto, ModuloArtefacto),
+    (   ModuloActual \= ModuloArtefacto
+    ->  Pasos = [ir(ModuloArtefacto), tomar(Artefacto), usar(Artefacto)],
+        ModuloSig = ModuloArtefacto
+    ;   Pasos = [tomar(Artefacto), usar(Artefacto)],
+        ModuloSig = ModuloActual
     ).
 
-% Nombre: artefactos_pendientes/1
+pasos_para_artefacto(Artefacto, ModuloActual, ModuloActual, []) :-
+    uso(Artefacto).
+
+% Nombre: pasos_para_lista_artefactos/4
+% Entrada: ListaArtefactos, ModuloActual, ModuloFinal, Pasos
+% Salida: Lista de pasos para obtener y usar todos los artefactos de la lista
+% Funcion: Recursion sobre cada artefacto requerido, acumulando pasos en orden
+pasos_para_lista_artefactos([], Modulo, Modulo, []).
+pasos_para_lista_artefactos([Art|Resto], ModuloActual, ModuloFinal, Pasos) :-
+    pasos_para_artefacto(Art, ModuloActual, ModuloTras, PasosArt),
+    pasos_para_lista_artefactos(Resto, ModuloTras, ModuloFinal, PasosResto),
+    append(PasosArt, PasosResto, Pasos).
+
+% Nombre: pasos_para_sistema/4
+% Entrada: Sistema, ModuloActual, ModuloFinal, Pasos
+% Salida: Lista de pasos para reparar el sistema desde ModuloActual
+% Funcion: Genera pasos para conseguir artefactos, ir al modulo y reparar
+pasos_para_sistema(Sistema, ModuloActual, ModuloFinal, Pasos) :-
+    \+ esta_reparado(Sistema),
+    sistema(ModuloSistema, Sistema, Artefactos, fallo),
+    pasos_para_lista_artefactos(Artefactos, ModuloActual, ModuloTras, PasosArts),
+    (   ModuloTras \= ModuloSistema
+    ->  PasosMover = [ir(ModuloSistema)]
+    ;   PasosMover = []
+    ),
+    append(PasosArts, PasosMover, PasosBase),
+    append(PasosBase, [reparar(Sistema)], Pasos),
+    ModuloFinal = ModuloSistema.
+
+% Nombre: pasos_para_sistemas/4
+% Entrada: ListaSistemas, ModuloActual, ModuloFinal, Pasos
+% Salida: Lista de pasos para reparar todos los sistemas pendientes en orden
+% Funcion: Recursion sobre cada sistema, encadenando el modulo final como siguiente inicio
+pasos_para_sistemas([], Modulo, Modulo, []).
+pasos_para_sistemas([Sys|Resto], ModuloActual, ModuloFinal, Pasos) :-
+    pasos_para_sistema(Sys, ModuloActual, ModuloTras, PasosSys),
+    pasos_para_sistemas(Resto, ModuloTras, ModuloFinal, PasosResto),
+    append(PasosSys, PasosResto, Pasos).
+
+% Nombre: pasos_para_tripulante/4
+% Entrada: Tripulante, ModuloActual, ModuloFinal, Pasos
+% Salida: Lista de pasos para rescatar al tripulante desde ModuloActual
+% Funcion: Genera pasos para ir al modulo del tripulante y rescatarlo
+pasos_para_tripulante(Tripulante, ModuloActual, ModuloFinal, Pasos) :-
+    \+ esta_rescatado(Tripulante),
+    tripulante(Tripulante, ModuloTripulante, _, atrapado),
+    (   ModuloActual \= ModuloTripulante
+    ->  Pasos = [ir(ModuloTripulante), rescatar(Tripulante)]
+    ;   Pasos = [rescatar(Tripulante)]
+    ),
+    ModuloFinal = ModuloTripulante.
+
+% Nombre: pasos_para_tripulantes/4
+% Entrada: ListaTripulantes, ModuloActual, ModuloFinal, Pasos
+% Salida: Lista de pasos para rescatar todos los tripulantes pendientes en orden
+% Funcion: Recursion sobre cada tripulante, encadenando posicion tras cada rescate
+pasos_para_tripulantes([], Modulo, Modulo, []).
+pasos_para_tripulantes([Trip|Resto], ModuloActual, ModuloFinal, Pasos) :-
+    pasos_para_tripulante(Trip, ModuloActual, ModuloTras, PasosTrip),
+    pasos_para_tripulantes(Resto, ModuloTras, ModuloFinal, PasosResto),
+    append(PasosTrip, PasosResto, Pasos).
+
+% Nombre: generar_plan/1
 % Entrada: Ninguna (variable de salida)
-% Salida: Lista de terminos artefacto_pendiente(Artefacto, Modulo, Ruta)
-% Funcion: Recopila los artefactos requeridos para reparaciones que aun no fueron usados
-artefactos_pendientes(Lista) :-
-    findall(
-        artefacto_pendiente(Artefacto, ModuloArtefacto, RutaDesdeJugador),
-        (
-            objetivoS(Sistema, restaurado),
-            \+ esta_reparado(Sistema),
-            sistema(_, Sistema, Artefactos, fallo),
-            member(Artefacto, Artefactos),
-            \+ uso(Artefacto),
-            artefacto(Artefacto, ModuloArtefacto),
-            jugador(Actual),
-            ruta(Actual, ModuloArtefacto, RutaDesdeJugador)
-        ),
-        Lista
+% Salida: Lista de pasos del tipo ir/1, tomar/1, usar/1, reparar/1, rescatar/1
+% Funcion: Genera un plan completo usando backtracking sobre el orden de sistemas y tripulantes.
+%          El backtracking de Prolog explora distintas permutaciones, generando soluciones distintas.
+generar_plan(Plan) :-
+    jugador(ModuloInicial),
+    findall(S, (objetivoS(S, restaurado), \+ esta_reparado(S)), Sistemas),
+    findall(T, (objetivoT(T, rescatado), \+ esta_rescatado(T)), Tripulantes),
+    permutation(Sistemas, OrdenSistemas),
+    permutation(Tripulantes, OrdenTripulantes),
+    pasos_para_sistemas(OrdenSistemas, ModuloInicial, ModuloTras, PasosSistemas),
+    pasos_para_tripulantes(OrdenTripulantes, ModuloTras, _, PasosTripulantes),
+    append(PasosSistemas, PasosTripulantes, Plan).
+
+% Nombre: como_gano/1
+% Entrada: Ninguna (variable de salida)
+% Salida: Lista de hasta 2 planes distintos
+% Funcion: Obtiene hasta 2 soluciones distintas usando findall sobre generar_plan
+como_gano(Planes) :-
+    findall(Plan, generar_plan(Plan), TodosPlanes),
+    list_to_set(TodosPlanes, PlanesUnicos),
+    (   PlanesUnicos = []
+    ->  Planes = []
+    ;   length(PlanesUnicos, N),
+        Max is min(N, 2),
+        length(Planes, Max),
+        append(Planes, _, PlanesUnicos)
     ).
 
-% Nombre: tripulantes_pendientes/1
-% Entrada: Ninguna (variable de salida)
-% Salida: Lista de terminos tripulante_pendiente(Tripulante, Modulo, Sistemas, Ruta)
-% Funcion: Recopila los tripulantes objetivo que aun no han sido rescatados
-tripulantes_pendientes(Lista) :-
-    findall(
-        tripulante_pendiente(Tripulante, Modulo, SistemasNecesarios, RutaDesdeJugador),
-        (
-            objetivoT(Tripulante, rescatado),
-            \+ esta_rescatado(Tripulante),
-            tripulante(Tripulante, Modulo, SistemasNecesarios, atrapado),
-            jugador(Actual),
-            ruta(Actual, Modulo, RutaDesdeJugador)
-        ),
-        Lista
-    ).
-
-% Nombre: como_gano/0
-% Entrada: Ninguna
-% Salida: Imprime el plan pendiente para completar el juego
-% Funcion: Muestra artefactos por obtener, sistemas por reparar y tripulantes por rescatar
-como_gano :-
-    sistemas_pendientes(Sistemas),
-    artefactos_pendientes(Artefactos),
-    tripulantes_pendientes(Tripulantes),
-    (   Sistemas = [], Artefactos = [], Tripulantes = []
-    ->  write('Ya cumpliste todas las condiciones. Usa verifica_gane para confirmar.')
-    ;   (   Artefactos \= []
-        ->  write('>> ARTEFACTOS POR OBTENER/USAR:'), nl,
-            forall(
-                member(artefacto_pendiente(Art, ModArt, RutaArt), Artefactos),
-                (
-                    write('   Artefacto : '), write(Art), nl,
-                    write('   Ubicado en: '), write(ModArt), nl,
-                    write('   Ruta      : '), write(RutaArt), nl, nl
-                )
-            )
-        ;   true
-        ),
-        (   Sistemas \= []
-        ->  write('>> SISTEMAS POR REPARAR:'), nl,
-            forall(
-                member(sistema_pendiente(Sys, ModSys, Arts, RutaSys), Sistemas),
-                (
-                    write('   Sistema   : '), write(Sys), nl,
-                    write('   Modulo    : '), write(ModSys), nl,
-                    write('   Requiere  : '), write(Arts), nl,
-                    write('   Ruta      : '), write(RutaSys), nl, nl
-                )
-            )
-        ;   true
-        ),
-        (   Tripulantes \= []
-        ->  write('>> TRIPULANTES POR RESCATAR:'), nl,
-            forall(
-                member(tripulante_pendiente(Trip, ModTrip, SisTrip, RutaTrip), Tripulantes),
-                (
-                    write('   Tripulante: '), write(Trip), nl,
-                    write('   Modulo    : '), write(ModTrip), nl,
-                    write('   Necesita  : '), write(SisTrip), nl,
-                    write('   Ruta      : '), write(RutaTrip), nl, nl
-                )
-            )
-        ;   true
-        )
-    ).
+% =========================================
+% VERIFICACION DE VICTORIA
+% =========================================
 
 % Nombre: verifica_gane/0
 % Entrada: Ninguna

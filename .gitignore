@@ -1,0 +1,3 @@
+src/Frontend/__pycache__/*.pyc
+src/Frontend/__pycache__/*.pyd
+src/Frontend/frames/__pycache__/*.pyc
