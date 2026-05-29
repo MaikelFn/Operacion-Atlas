@@ -323,39 +323,45 @@ def obtener_descripcion_modulo(modulo):
     resultado = consultar_uno(f"modulo({modulo}, Descripcion)") or {}
     return str(resultado.get("Descripcion") or "")
 
+def obtener_enlaces():
+    """
+    Retorna todos los enlaces entre modulos como lista de tuplas (modulo1, modulo2).
+    Entrada: ninguna.
+    Salida: lista de tuplas de strings.
+    """
+    enlaces = []
+    vistos = set()
+    for r in consultar_todos("enlace(A, B)"):
+        a = str(r.get("A") or "")
+        b = str(r.get("B") or "")
+        if a and b:
+            clave = tuple(sorted([a, b]))
+            if clave not in vistos:
+                vistos.add(clave)
+                enlaces.append((a, b))
+    return enlaces
 
 def como_gano():
-    artefactos = []
-    for r in consultar_todos("artefactos_pendientes(Lista), member(artefacto_pendiente(Art,Mod,Ruta), Lista)"):
-        artefactos.append({
-            "artefacto": str(r.get("Art") or ""),
-            "modulo":    str(r.get("Mod") or ""),
-            "ruta":      lista_a_texto(r.get("Ruta")),
-        })
+    resultado = consultar_uno("como_gano(Planes)") or {}
+    planes_prolog = resultado.get("Planes") or []
 
-    sistemas = []
-    for r in consultar_todos("sistemas_pendientes(Lista), member(sistema_pendiente(Sys,Mod,Arts,Ruta), Lista)"):
-        sistemas.append({
-            "sistema":    str(r.get("Sys") or ""),
-            "modulo":     str(r.get("Mod") or ""),
-            "artefactos": lista_a_texto(r.get("Arts")),
-            "ruta":       lista_a_texto(r.get("Ruta")),
-        })
+    planes = []
+    for plan_prolog in planes_prolog:
+        pasos = []
+        pasos_lista = plan_prolog if isinstance(plan_prolog, list) else [plan_prolog]
+        for paso in pasos_lista:
+            paso_str = str(paso)
+            # Cada paso es un termino como ir(modulo), tomar(art), etc.
+            if "(" in paso_str and paso_str.endswith(")"):
+                accion = paso_str[:paso_str.index("(")]
+                argumento = paso_str[paso_str.index("(")+1:-1]
+            else:
+                accion = paso_str
+                argumento = ""
+            pasos.append({"accion": accion, "argumento": argumento})
+        planes.append(pasos)
 
-    tripulantes = []
-    for r in consultar_todos("tripulantes_pendientes(Lista), member(tripulante_pendiente(Trip,Mod,Sis,Ruta), Lista)"):
-        tripulantes.append({
-            "tripulante": str(r.get("Trip") or ""),
-            "modulo":     str(r.get("Mod") or ""),
-            "sistemas":   lista_a_texto(r.get("Sis")),
-            "ruta":       lista_a_texto(r.get("Ruta")),
-        })
-
-    return {
-        "artefactos":  artefactos,
-        "sistemas":    sistemas,
-        "tripulantes": tripulantes,
-    }
+    return planes
 
 def verifica_gane():
     """
@@ -415,6 +421,7 @@ __all__ = [
     "usar",
     "ruta",
     "obtener_modulos",
+    "obtener_enlaces",
     "como_gano",
     "verifica_gane"
 ]
