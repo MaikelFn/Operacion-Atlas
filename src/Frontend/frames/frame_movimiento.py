@@ -18,11 +18,9 @@ _lista_destinos_frame  = None
 
 def construir(ventana, on_volver):
     """
-    Construye el frame de movimiento.
-
-    :param ventana:   Ventana raíz (necesaria para crear StringVars).
-    :param on_volver: Callback para regresar a la pantalla de juego.
-    :returns: frame construido.
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz de movimiento.
     """
     global _seleccion_destino_var, _origen_movimiento_var, _lista_destinos_frame
 
@@ -91,7 +89,12 @@ def construir(ventana, on_volver):
 
 
 def actualizar(on_volver_callback=None):
-    """Recarga la lista de destinos disponibles desde la posición actual del jugador."""
+    """
+    Entrada: on_volver_callback (callable o None).
+    Salida: Ninguna.
+    Funcionamiento: Recarga la lista de destinos disponibles desde la ubicación actual
+                    y actualiza el callback de volver si se proporciona uno nuevo.
+    """
     global _on_volver
     if on_volver_callback:
         _on_volver = on_volver_callback
@@ -125,6 +128,12 @@ _on_volver = None
 
 
 def _ejecutar_movimiento():
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Valida el destino seleccionado y realiza el movimiento.
+                    Si el movimiento es exitoso llama al callback de volver.
+    """
     destino = _seleccion_destino_var.get().strip()
     if not destino:
         messagebox.showwarning("Movimiento", "Primero selecciona un destino.")

@@ -102,73 +102,144 @@ logica_interfaz.frame_como_gano  = frame_como_gano
 # NAVEGACIÓN
 
 def actualizar_estado():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Refresca el panel de estado dentro del frame de juego.
+    """
     modulo_frame_estado.actualizar(texto_estado)
 
 
 def abrir_juego():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado y muestra el frame principal del juego.
+    """
     actualizar_estado()
     logica_interfaz.ir_a_jugar()
 
 
 def abrir_pantalla_mover():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado, refresca la pantalla de movimiento
+                    y navega hacia ella.
+    """
     actualizar_estado()
     modulo_frame_movimiento.actualizar(on_volver_callback=abrir_juego)
     logica_interfaz.ir_a_mover()
 
 
 def abrir_pantalla_ruta():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado, refresca la información de ruta
+                    y muestra la pantalla de ruta.
+    """
     actualizar_estado()
     modulo_frame_modulos.refrescar_ruta()
     logica_interfaz.mostrar_frame(frame_ruta)
 
 
 def abrir_pantalla_tomar():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado y navega a la pantalla de tomar artefacto.
+    """
     actualizar_estado()
     modulo_frame_artefactos.actualizar_tomar()
     logica_interfaz.ir_a_tomar()
 
 
 def abrir_pantalla_usar():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado y navega a la pantalla de usar artefacto.
+    """
     actualizar_estado()
     modulo_frame_artefactos.actualizar_usar()
     logica_interfaz.ir_a_usar()
 
 
 def abrir_pantalla_donde():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado y navega a la pantalla de consultar
+                    ubicación de artefacto.
+    """
     actualizar_estado()
     modulo_frame_artefactos.actualizar_donde()
     logica_interfaz.ir_a_donde()
 
 
 def abrir_pantalla_inventario():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado y muestra el inventario de artefactos.
+    """
     actualizar_estado()
     modulo_frame_artefactos.actualizar_inventario()
     logica_interfaz.ir_a_inventario()
 
 
 def abrir_pantalla_reparar():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado y muestra la pantalla de reparación
+                    de sistemas.
+    """
     actualizar_estado()
     modulo_frame_sistemas.actualizar()
     logica_interfaz.mostrar_frame(frame_reparar)
 
 
 def abrir_pantalla_rescatar():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado y navega a la pantalla de rescate
+                    de tripulantes.
+    """
     actualizar_estado()
     modulo_frame_tripulantes.actualizar()
     logica_interfaz.ir_a_rescatar()
 
 
 def abrir_pantalla_visitados():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado y muestra la lista de módulos visitados.
+    """
     actualizar_estado()
     modulo_frame_modulos.actualizar_visitados()
     logica_interfaz.ir_a_visitados()
 
 
 def abrir_pantalla_como_gano():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra la pantalla con las condiciones de victoria.
+    """
     logica_interfaz.mostrar_frame(frame_como_gano)
 
 
 def abrir_pantalla_victoria():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el estado de victoria y muestra la pantalla
+                    correspondiente.
+    """
     modulo_frame_victoria.actualizar()
     logica_interfaz.mostrar_frame(frame_victoria)
 

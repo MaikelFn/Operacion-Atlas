@@ -23,6 +23,11 @@ _tomar_lista_frame    = None
 
 
 def construir_tomar(ventana, on_volver):
+    """
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz de toma de artefactos.
+    """
     global _tomar_seleccion_var, _tomar_origen_var, _tomar_lista_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
@@ -74,6 +79,11 @@ def construir_tomar(ventana, on_volver):
 
 
 def actualizar_tomar():
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Refresca la lista de artefactos disponibles en el módulo actual.
+    """
     for w in _tomar_lista_frame.winfo_children():
         w.destroy()
     _tomar_seleccion_var.set("")
@@ -95,6 +105,11 @@ def actualizar_tomar():
 
 
 def _ejecutar_tomar(on_volver):
+    """
+    Entrada: on_volver (callable).
+    Salida: Ninguna.
+    Funcionamiento: Intenta tomar el artefacto seleccionado y muestra el resultado.
+    """
     artefacto = _tomar_seleccion_var.get().strip()
     if not artefacto:
         messagebox.showwarning("Tomar", "Primero selecciona un artefacto.")
@@ -116,6 +131,11 @@ _usar_lista_frame   = None
 
 
 def construir_usar(ventana, on_volver):
+    """
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz para usar artefactos.
+    """
     global _usar_seleccion_var, _usar_origen_var, _usar_lista_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
@@ -167,6 +187,11 @@ def construir_usar(ventana, on_volver):
 
 
 def actualizar_usar():
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Refresca la lista de artefactos usables del inventario.
+    """
     for w in _usar_lista_frame.winfo_children():
         w.destroy()
     _usar_seleccion_var.set("")
@@ -188,6 +213,11 @@ def actualizar_usar():
 
 
 def _ejecutar_usar(on_volver):
+    """
+    Entrada: on_volver (callable).
+    Salida: Ninguna.
+    Funcionamiento: Intenta usar el artefacto seleccionado y muestra el resultado.
+    """
     artefacto = _usar_seleccion_var.get().strip()
     if not artefacto:
         messagebox.showwarning("Usar", "Primero selecciona un artefacto.")
@@ -209,6 +239,11 @@ _donde_lista_frame   = None
 
 
 def construir_donde(ventana, on_volver):
+    """
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz para consultar ubicación de artefactos.
+    """
     global _donde_seleccion_var, _donde_ubicacion_var, _donde_lista_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
@@ -257,6 +292,11 @@ def construir_donde(ventana, on_volver):
 
 
 def actualizar_donde():
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Refresca la lista de artefactos fuera del inventario.
+    """
     for w in _donde_lista_frame.winfo_children():
         w.destroy()
     _donde_seleccion_var.set("")
@@ -276,6 +316,11 @@ def actualizar_donde():
 
 
 def _seleccionar_donde(artefacto):
+    """
+    Entrada: artefacto (str).
+    Salida: Ninguna.
+    Funcionamiento: Muestra el módulo donde se encuentra el artefacto seleccionado.
+    """
     _donde_seleccion_var.set(artefacto)
     modulo = logica_interfaz.donde_esta(artefacto)
     _donde_ubicacion_var.set(f"Se encuentra en: {modulo}")
@@ -291,6 +336,11 @@ _inv_lista_frame   = None
 
 
 def construir_inventario(ventana, on_volver):
+    """
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz del inventario del jugador.
+    """
     global _inv_seleccion_var, _inv_detalle_var, _inv_lista_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
@@ -339,6 +389,11 @@ def construir_inventario(ventana, on_volver):
 
 
 def actualizar_inventario():
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Refresca la lista de artefactos en el inventario.
+    """
     for w in _inv_lista_frame.winfo_children():
         w.destroy()
     _inv_seleccion_var.set("")
@@ -361,6 +416,11 @@ def actualizar_inventario():
 
 
 def _seleccionar_inventario(item):
+    """
+    Entrada: item (dict con claves "artefacto", "usado", "modulo").
+    Salida: Ninguna.
+    Funcionamiento: Muestra los detalles del artefacto seleccionado del inventario.
+    """
     _inv_seleccion_var.set(item["artefacto"])
     usado_texto = "Sí" if item["usado"] else "No"
     _inv_detalle_var.set(f"Usado: {usado_texto}\nObtenido en: {item['modulo']}")

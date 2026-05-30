@@ -19,11 +19,9 @@ _callback_volver  = None
 
 def construir(ventana, on_volver=None):
     """
-    Construye el frame de como_gano.
-
-    :param ventana:   Ventana principal.
-    :param on_volver: Callback para el botón de volver.
-    :return: Frame contenedor.
+    Entrada: ventana (tk.Tk), on_volver (callable o None).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna el frame de la pantalla "Cómo gano".
     """
     global _frame_contenedor, _texto, _boton_volver, _callback_volver
 
@@ -102,9 +100,10 @@ def construir(ventana, on_volver=None):
 
 def actualizar():
     """
-    Refresca el contenido consultando como_gano en Prolog a traves
-    de logica_interfaz.como_gano().
-    Muestra hasta 10 planes paso a paso.
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Refresca el contenido mostrando hasta 10 planes paso a paso
+                    para ganar, obtenidos desde logica_interfaz.como_gano().
     """
     if _texto is None:
         return
@@ -158,6 +157,10 @@ def actualizar():
 
 
 def _volver():
-    """Ejecuta el callback de volver."""
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Ejecuta el callback de volver si está definido.
+    """
     if _callback_volver:
         _callback_volver()
