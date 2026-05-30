@@ -265,6 +265,13 @@ def inicializar_juego():
     """
     return consultar_uno("inicializar_juego") is not None
 
+def reiniciar_juego():
+    """
+    Entrada: Ninguna.
+    Salida: bool.
+    Funcionamiento: Reinicia el estado del juego en Prolog; retorna True si la operación se realizó.
+    """
+    return consultar_uno("reiniciar_juego") is not None
 
 def reparar(sistema):
     """

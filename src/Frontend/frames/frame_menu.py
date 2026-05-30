@@ -33,11 +33,15 @@ def construir(ventana, on_jugar):
     ).pack(pady=(0, 50))
 
     tk.Button(
-        frame, text="JUGAR", pady=16,
+        frame, text="PARTIDA NUEVA", pady=16,
         command=on_jugar,
         **estilos.estilo_boton()
     ).pack(pady=10)
-
+    tk.Button(
+        frame, text="REPETICION", pady=16,
+        command=None,
+        **estilos.estilo_boton()
+    ).pack(pady=10)
     tk.Button(
         frame, text="SALIR", pady=16,
         command=ventana.destroy,

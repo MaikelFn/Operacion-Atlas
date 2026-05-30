@@ -74,7 +74,7 @@ modulo_frame_juego.construir(frame_juego, callbacks={
     "visitados":  lambda: abrir_pantalla_visitados(),
     "como_gano":  lambda: abrir_pantalla_como_gano(),
     "victoria":   lambda: abrir_pantalla_victoria(),
-    "menu":       lambda: logica_interfaz.ir_a_menu(),
+    "menu": lambda: (logica_interfaz.reiniciar_juego(), logica_interfaz.ir_a_menu()),
 })
 
 # Frame de menú (se construye al final para capturar lambdas correctamente)
@@ -116,6 +116,7 @@ def abrir_juego():
     Salida: Ninguna.
     Funcionamiento: Actualiza el estado y muestra el frame principal del juego.
     """
+    
     actualizar_estado()
     logica_interfaz.ir_a_jugar()
 

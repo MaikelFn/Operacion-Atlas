@@ -1,0 +1,1 @@
+[mover(enfermeria),tomar(traje_espacial),usar(traje_espacial),mover(puente_mando),mover(laboratorio),tomar(fusible),usar(fusible),reparar(comunicaciones),mover(modulo_energia),reparar(energia),rescatar(elena)].

@@ -10,9 +10,8 @@
 :- dynamic tripulantes_rescatados/1.
 :- dynamic sistemas_reparados/1.
 :- dynamic ruta_historial/1.
-
-:- consult('conocimiento.pl').
-
+:- dynamic comandos/1.
+:- consult('../Backend/conocimiento.pl').
 % =========================================
 % ESTADO INICIAL
 % =========================================
@@ -22,6 +21,7 @@ usados([]).
 tripulantes_rescatados([]).
 sistemas_reparados([]).
 ruta_historial([]).
+comandos([]).
 
 % Nombre: inicializar_juego/0
 % Entrada: Ninguna
@@ -31,6 +31,36 @@ ruta_historial([]).
 inicializar_juego :-
     jugador(ModuloInicial),
     registrar_visita(ModuloInicial).
+
+% Nombre: reiniciar_juego/0
+% Entrada: Ninguna
+% Salida: Deja el juego en el estado inicial (como recién comenzado)
+reiniciar_juego :-
+    % 1. Limpiar todos los hechos dinámicos
+    retractall(jugador(_)),
+    retractall(artefactosLogrados(_)),
+    retractall(sistema(_,_,_,_)),
+    retractall(tripulante(_,_,_,_)),
+    retractall(visitados(_)),
+    retractall(usados(_)),
+    retractall(tripulantes_rescatados(_)),
+    retractall(sistemas_reparados(_)),
+    retractall(ruta_historial(_)),
+    retractall(comandos(_)),
+
+    % 2. Recargar el archivo de conocimiento (hechos estáticos)
+    consult('../Backend/conocimiento.pl'),
+
+    % 3. Reafirmar los hechos de progreso (vacíos)
+    assertz(visitados([])),
+    assertz(usados([])),
+    assertz(tripulantes_rescatados([])),
+    assertz(sistemas_reparados([])),
+    assertz(ruta_historial([])),
+    assertz(comandos([])),
+
+    % 4. Registrar el modulo inicial como visitado
+    inicializar_juego.
 
 % =========================================
 % CONECTIVIDAD ENTRE MODULOS
@@ -103,6 +133,7 @@ usar(Artefacto) :-
     usados(Lista),
     retract(usados(Lista)),
     assertz(usados([Artefacto | Lista])),
+    registrar_comando(usar(Artefacto)),
     agregar_a_ruta(usaste(Artefacto)).
 
 % =========================================
@@ -162,6 +193,43 @@ cumple_requisito_estado(Modulo) :-
 % =========================================
 % REGISTRO DE ESTADOS
 % =========================================
+
+% Nombre: registrar_comando/1
+% Entrada: Comando (término Prolog, ej. mover(laboratorio))
+% Salida: Agrega el comando al final de la lista de comandos
+% Autor: Maikel Flores
+registrar_comando(Comando) :-
+    comandos(Lista),
+    retract(comandos(Lista)),
+    append(Lista, [Comando], ListaNueva),
+    assertz(comandos(ListaNueva)).
+
+% Nombre: guardar_repeticion/0
+% Entrada: Nada
+% Salida: Guarda la lista de comandos en el archivo
+% Autor: Maikel Flores
+guardar_repeticion :-
+    comandos(ListaComandos),
+    open('../DataBase/Partida.txt', write, Stream),
+    write(Stream, ListaComandos),
+    write(Stream, '.'),
+    close(Stream).
+
+% Nombre: reproducir_repeticion/0
+% Entrada: Nada
+% Salida: Ejecuta los comandos en orden para reproducir la partida
+% Autor: Maikel Flores
+reproducir_repeticion:-
+    reiniciar_juego,
+    open('../DataBase/Partida.txt', read, Stream),
+    read(Stream, ListaComandos),
+    close(Stream),
+    maplist(ejecutar_comando, ListaComandos).
+% Nombre: ejecutar_comando/1
+% Entrada: Comando (término Prolog)
+% Salida: Ejecuta el comando dado
+% Autor: Maikel Flores
+ejecutar_comando(Comando) :- call(Comando).
 
 % Nombre: registrar_visita/1
 % Entrada: Modulo
@@ -245,6 +313,7 @@ mover(Destino) :-
     retract(jugador(Actual)),
     assertz(jugador(Destino)),
     registrar_visita(Destino),
+    registrar_comando(mover(Destino)),
     agregar_a_ruta(fuiste_a(Destino)).
 
 % =========================================
@@ -263,6 +332,7 @@ tomar(Artefacto) :-
     \+ member(Artefacto, Lista),
     retract(artefactosLogrados(Lista)),
     assertz(artefactosLogrados([Artefacto | Lista])),
+    registrar_comando(tomar(Artefacto)),
     agregar_a_ruta(tomaste(Artefacto)).
 
 % =========================================
@@ -310,6 +380,7 @@ reparar(Sistema) :-
         )
     ),
     registrar_reparacion(Sistema),
+    registrar_comando(reparar(Sistema)),
     agregar_a_ruta(reparaste(Sistema)).
 
 % =========================================
@@ -366,6 +437,7 @@ rescatar(Tripulante) :-
         )
     ),
     registrar_rescate(Tripulante),
+    registrar_comando(rescatar(Tripulante)),
     agregar_a_ruta(rescataste(Tripulante)).
 
 % =========================================
