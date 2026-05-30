@@ -99,9 +99,18 @@ def construir(frame_juego, callbacks):
     tk.Button(fila, text="Victoria",  pady=8, command=callbacks["victoria"],
               **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=1, column=0, padx=(0, 8), pady=4)
 
-    # ── VOLVER AL MENÚ ──
+    # ── VOLVER AL MENÚ / GUARDAR PARTIDA ──
+    fila_final = tk.Frame(contenido, bg=estilos.COLOR_FONDO)
+    fila_final.pack(anchor="w", pady=(30, 0))
+    
     tk.Button(
-        contenido, text="Volver al Menú", pady=12,
+        fila_final, text="Guardar Partida", pady=12,
+        command=callbacks["guardar"],
+        **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)
+    ).pack(side="left", padx=(0, 8))
+    
+    tk.Button(
+        fila_final, text="Volver al Menú", pady=12,
         command=callbacks["menu"],
         **estilos.estilo_boton(color_fg=estilos.COLOR_TEXTO_OSCURO)
-    ).pack(anchor="w", pady=(30, 0))
+    ).pack(side="left")

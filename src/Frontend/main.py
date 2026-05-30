@@ -11,6 +11,7 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 
 import tkinter as tk
+from tkinter import messagebox
 import estilos as estilos
 import logica_interfaz as logica_interfaz
 
@@ -74,6 +75,7 @@ modulo_frame_juego.construir(frame_juego, callbacks={
     "visitados":  lambda: abrir_pantalla_visitados(),
     "como_gano":  lambda: abrir_pantalla_como_gano(),
     "victoria":   lambda: abrir_pantalla_victoria(),
+    "guardar":    lambda: guardar_partida_con_confirmacion(ventana),
     "menu": lambda: (logica_interfaz.reiniciar_juego(), logica_interfaz.ir_a_menu()),
 })
 
@@ -100,6 +102,21 @@ logica_interfaz.frame_como_gano  = frame_como_gano
 
 
 # NAVEGACIÓN
+
+def guardar_partida_con_confirmacion(ventana):
+    """
+    Entrada: ventana (tk.Tk).
+    Salida: Ninguna.
+    Funcionamiento: Muestra un cuadro de confirmación y guarda la partida si el usuario presiona "Sí".
+    """
+    respuesta = messagebox.askyesno(
+        "Guardar Partida",
+        "Esto reescribirá tu partida anterior\n¿Estás seguro de que deseas continuar?"
+    )
+    if respuesta:
+        logica_interfaz.guardar_partida()
+        messagebox.showinfo("Partida Guardada", "Tu partida ha sido guardada exitosamente.")
+
 
 def actualizar_estado():
     """

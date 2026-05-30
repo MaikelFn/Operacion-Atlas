@@ -606,6 +606,16 @@ def verifica_gane():
     return False, None
 
 
+def guardar_partida():
+    """
+    Entrada: Ninguna.
+    Salida: bool.
+    Funcionamiento: Guarda la partida actual en el archivo DataBase/Partida.txt
+                    mediante una consulta a Prolog.
+    """
+    return consultar_uno("guardar_repeticion") is not None
+
+
 __all__ = [
     "mostrar_frame",
     "ir_a_menu",
