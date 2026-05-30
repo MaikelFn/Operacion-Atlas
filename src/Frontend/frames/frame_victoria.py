@@ -18,11 +18,9 @@ _callback_volver = None
 
 def construir(ventana, on_volver=None):
     """
-    Construye el frame de victoria.
-
-    :param ventana: Ventana principal
-    :param on_volver: Callback para el botón de volver
-    :return: Frame contenedor del panel de victoria
+    Entrada: ventana (tk.Tk), on_volver (callable o None).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna el frame de la pantalla de victoria.
     """
 
     global _frame_contenedor
@@ -90,8 +88,9 @@ def construir(ventana, on_volver=None):
 
 def _obtener_historial_ruta():
     """
-    Consulta el historial de ruta directamente desde Prolog.
-    Retorna una lista de strings con cada evento registrado.
+    Entrada: Ninguna (usa logica_interfaz).
+    Salida: list[str].
+    Funcionamiento: Consulta el historial de ruta desde Prolog y lo retorna como lista de strings.
     """
     resultado = logica_interfaz.consultar_uno("historial_ruta(Lista)") or {}
     valor = resultado.get("Lista")
@@ -104,8 +103,10 @@ def _obtener_historial_ruta():
 
 def actualizar():
     """
-    Refresca el contenido del panel de victoria
-    consultando el estado en Prolog.
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Refresca el contenido del panel de victoria consultando el estado en Prolog.
+                    Muestra un resumen si se alcanzó la victoria o los objetivos pendientes.
     """
 
     global _texto_victoria
@@ -391,7 +392,9 @@ def actualizar():
 
 def _volver():
     """
-    Ejecuta el callback de volver.
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Ejecuta el callback de volver si está definido.
     """
 
     if _callback_volver:

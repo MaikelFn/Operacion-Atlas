@@ -19,11 +19,9 @@ _lista_artefactos_req_frame = None
 
 def construir(ventana, on_volver):
     """
-    Construye el frame de reparación de sistemas.
-
-    :param ventana:   Ventana raíz de Tkinter.
-    :param on_volver: Callback para regresar a la pantalla de juego.
-    :returns: frame construido.
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz de reparación de sistemas.
     """
     global _seleccion_sistema_var, _lista_sistemas_frame, _lista_artefactos_req_frame
 
@@ -90,7 +88,11 @@ def construir(ventana, on_volver):
 
 
 def actualizar():
-    """Recarga la lista de sistemas en fallo del módulo actual."""
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Recarga la lista de sistemas en fallo del módulo actual.
+    """
     for w in _lista_sistemas_frame.winfo_children():
         w.destroy()
     for w in _lista_artefactos_req_frame.winfo_children():
@@ -115,6 +117,11 @@ def actualizar():
 
 
 def _seleccionar_sistema(sistema):
+    """
+    Entrada: sistema (str).
+    Salida: Ninguna.
+    Funcionamiento: Muestra los artefactos requeridos para reparar el sistema seleccionado.
+    """
     _seleccion_sistema_var.set(sistema)
 
     for w in _lista_artefactos_req_frame.winfo_children():
@@ -137,6 +144,11 @@ def _seleccionar_sistema(sistema):
 
 
 def _ejecutar_reparacion(on_volver):
+    """
+    Entrada: on_volver (callable).
+    Salida: Ninguna.
+    Funcionamiento: Intenta reparar el sistema seleccionado y muestra el resultado.
+    """
     sistema = _seleccion_sistema_var.get().strip()
     if not sistema:
         messagebox.showwarning("Reparar", "Selecciona primero un sistema.")

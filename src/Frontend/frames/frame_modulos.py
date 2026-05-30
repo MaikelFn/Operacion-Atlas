@@ -22,11 +22,9 @@ _vis_lista_frame     = None
 
 def construir_visitados(ventana, on_volver):
     """
-    Construye el frame de módulos visitados.
-
-    :param ventana:   Ventana raíz de Tkinter.
-    :param on_volver: Callback para regresar a la pantalla de juego.
-    :returns: frame construido.
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz de módulos visitados.
     """
     global _vis_seleccion_var, _vis_descripcion_var, _vis_lista_frame
 
@@ -85,7 +83,11 @@ def construir_visitados(ventana, on_volver):
 
 
 def actualizar_visitados():
-    """Recarga la lista de módulos visitados."""
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Recarga la lista de módulos visitados desde logica_interfaz.
+    """
     for w in _vis_lista_frame.winfo_children():
         w.destroy()
     _vis_seleccion_var.set("")
@@ -109,6 +111,11 @@ def actualizar_visitados():
 
 
 def _seleccionar_visitado(modulo):
+    """
+    Entrada: modulo (str).
+    Salida: Ninguna.
+    Funcionamiento: Muestra el nombre y la descripción del módulo visitado seleccionado.
+    """
     _vis_seleccion_var.set(modulo)
     _vis_descripcion_var.set(logica_interfaz.obtener_descripcion_modulo(modulo))
 
@@ -124,11 +131,9 @@ _resultado_txt = None
 
 def construir_ruta(ventana, on_volver):
     """
-    Construye el frame de cálculo de ruta entre módulos.
-
-    :param ventana:   Ventana raíz de Tkinter.
-    :param on_volver: Callback para regresar a la pantalla de juego.
-    :returns: frame construido.
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz para calcular ruta entre módulos.
     """
     global _cb_inicio, _cb_destino, _resultado_txt
 
@@ -180,7 +185,12 @@ def construir_ruta(ventana, on_volver):
 
 
 def refrescar_ruta():
-    """Actualiza los valores de los combobox y limpia el resultado."""
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Actualiza los valores de los combobox con los módulos disponibles
+                    y limpia el resultado anterior.
+    """
     modulos = logica_interfaz.obtener_modulos() or []
     try:
         _cb_inicio["values"]  = modulos
@@ -195,6 +205,12 @@ def refrescar_ruta():
 
 
 def _mostrar_ruta():
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Calcula y muestra la ruta entre el módulo de inicio y el destino
+                    usando logica_interfaz.ruta().
+    """
     inicio  = _cb_inicio.get().strip()
     destino = _cb_destino.get().strip()
     if not inicio or not destino:

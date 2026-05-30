@@ -12,8 +12,9 @@ import logica_interfaz as logica_interfaz
 
 def construir(frame_juego):
     """
-    Construye y retorna el panel izquierdo de estado dentro de frame_juego.
-    Retorna el widget Text para que main.py pueda llamar a actualizar().
+    Entrada: frame_juego (tk.Frame).
+    Salida: texto_estado (tk.Text).
+    Funcionamiento: Construye y retorna el panel izquierdo de estado dentro de frame_juego.
     """
     panel_izquierdo = tk.Frame(frame_juego, bg=estilos.COLOR_FONDO, width=312)
     panel_izquierdo.pack(side="left", fill="y", padx=(8, 12), pady=16)
@@ -52,7 +53,12 @@ def construir(frame_juego):
 
 
 def actualizar(texto_estado):
-    """Refresca el contenido del panel izquierdo consultando el estado actual en Prolog."""
+    """
+    Entrada: texto_estado (tk.Text).
+    Salida: Ninguna.
+    Funcionamiento: Refresca el contenido del panel izquierdo consultando el estado actual
+                    en Prolog a través de logica_interfaz.obtener_estado_jugador().
+    """
     texto_estado.config(state="normal")
     texto_estado.delete("1.0", "end")
 

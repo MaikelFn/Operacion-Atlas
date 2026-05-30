@@ -24,17 +24,37 @@ _prolog.consult(str(archivo_logica).replace("\\", "/"))
 
 
 def obtener_prolog():
+    """
+    Entrada: Ninguna.
+    Salida: Prolog.
+    Funcionamiento: Retorna la instancia del motor Prolog utilizada por el módulo.
+    """
     return _prolog
 
 
 def consultar_uno(query):
+    """
+    Entrada: query (str).
+    Salida: dict o None.
+    Funcionamiento: Ejecuta una consulta Prolog y retorna el primer resultado si existe.
+    """
     return next(obtener_prolog().query(query), None)
 
 def consultar_todos(query):
+    """
+    Entrada: query (str).
+    Salida: list[dict].
+    Funcionamiento: Ejecuta una consulta Prolog y retorna todos los resultados.
+    """
     return list(obtener_prolog().query(query))
 
 
 def lista_a_texto(valor):
+    """
+    Entrada: valor (Atom, list o None).
+    Salida: list[str].
+    Funcionamiento: Convierte un término Prolog (átomo o lista) en una lista plana de strings.
+    """
     if valor is None:
         return []
     if isinstance(valor, list):
@@ -43,7 +63,12 @@ def lista_a_texto(valor):
 
 
 def obtener_estado_jugador():
-    """Consulta a Prolog el estado relevante del jugador para pintar la UI."""
+    """
+    Entrada: Ninguna.
+    Salida: dict.
+    Funcionamiento: Consulta a Prolog el estado actual del jugador (ubicación, artefactos,
+                    sistemas en falla, tripulantes atrapados) y lo retorna estructurado.
+    """
     jugador = consultar_uno("jugador(Modulo)") or {}
     ubicacion = str(jugador.get("Modulo") or "") or "desconocido"
 
@@ -83,7 +108,10 @@ def obtener_estado_jugador():
 
 def obtener_tripulantes_objetivo_atrapados():
     """
-    Retorna solo los tripulantes atrapados que son condición de victoria.
+    Entrada: Ninguna.
+    Salida: list[dict].
+    Funcionamiento: Retorna solo los tripulantes atrapados que forman parte de los objetivos
+                    de victoria (condición objetivoT rescatado).
     """
     objetivos = set()
     for r in consultar_todos("objetivoT(Tripulante, rescatado)"):
@@ -101,6 +129,11 @@ def obtener_tripulantes_objetivo_atrapados():
     return tripulantes
 
 def mostrar_frame(frame):
+    """
+    Entrada: frame (tk.Frame).
+    Salida: Ninguna.
+    Funcionamiento: Oculta el frame actual y muestra el frame indicado en el centro de la ventana.
+    """
     global frame_activo
     if frame_activo:
         try:
@@ -115,46 +148,91 @@ def mostrar_frame(frame):
 
 
 def ir_a_menu():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame del menú principal si está construido.
+    """
     if frame_menu:
         mostrar_frame(frame_menu)
 
 
 def ir_a_jugar():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame de juego si está construido.
+    """
     if frame_juego:
         mostrar_frame(frame_juego)
 
 
 def ir_a_mover():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame de movimiento si está construido.
+    """
     if frame_mover:
         mostrar_frame(frame_mover)
 
 
 def ir_a_tomar():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame de tomar artefacto si está construido.
+    """
     if frame_tomar:
         mostrar_frame(frame_tomar)
 
 
 def ir_a_usar():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame de usar artefacto si está construido.
+    """
     if frame_usar:
         mostrar_frame(frame_usar)
 
 
 def ir_a_donde():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame de consultar ubicación de artefacto si está construido.
+    """
     if frame_donde:
         mostrar_frame(frame_donde)
 
 
 def ir_a_inventario():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame de inventario si está construido.
+    """
     if frame_inventario:
         mostrar_frame(frame_inventario)
 
 
 def ir_a_rescatar():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame de rescate si está construido.
+    """
     if frame_rescatar:
         mostrar_frame(frame_rescatar)
 
 
 def ir_a_visitados():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Muestra el frame de módulos visitados si está construido.
+    """
     if frame_visitados:
         mostrar_frame(frame_visitados)
 
@@ -162,22 +240,47 @@ def ir_a_visitados():
 # Acciones del juego
 
 def tomar(artefacto):
+    """
+    Entrada: artefacto (str).
+    Salida: bool.
+    Funcionamiento: Intenta tomar el artefacto mediante Prolog; retorna True si tuvo éxito.
+    """
     return consultar_uno(f"tomar({artefacto})") is not None
 
 
 def usar(artefacto):
+    """
+    Entrada: artefacto (str).
+    Salida: bool.
+    Funcionamiento: Intenta usar el artefacto mediante Prolog; retorna True si tuvo éxito.
+    """
     return consultar_uno(f"usar({artefacto})") is not None
 
 
 def inicializar_juego():
+    """
+    Entrada: Ninguna.
+    Salida: bool.
+    Funcionamiento: Inicializa el estado del juego en Prolog; retorna True si la operación se realizó.
+    """
     return consultar_uno("inicializar_juego") is not None
 
 
 def reparar(sistema):
+    """
+    Entrada: sistema (str).
+    Salida: bool.
+    Funcionamiento: Intenta reparar el sistema mediante Prolog; retorna True si tuvo éxito.
+    """
     return consultar_uno(f"reparar({sistema})") is not None
 
 
 def obtener_tripulantes_atrapados_modulo_actual():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna los nombres de los tripulantes atrapados en el módulo actual.
+    """
     jugador = consultar_uno("jugador(Modulo)") or {}
     ubicacion = str(jugador.get("Modulo") or "")
 
@@ -190,6 +293,11 @@ def obtener_tripulantes_atrapados_modulo_actual():
 
 
 def obtener_sistemas_requeridos_tripulante(tripulante):
+    """
+    Entrada: tripulante (str).
+    Salida: list[str].
+    Funcionamiento: Retorna los sistemas requeridos para rescatar al tripulante en el módulo actual.
+    """
     jugador = consultar_uno("jugador(Modulo)") or {}
     ubicacion = str(jugador.get("Modulo") or "")
 
@@ -198,6 +306,11 @@ def obtener_sistemas_requeridos_tripulante(tripulante):
 
 
 def obtener_sistemas_en_fallo():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna los sistemas en fallo del módulo actual.
+    """
     jugador = consultar_uno("jugador(Modulo)") or {}
     ubicacion = str(jugador.get("Modulo") or "")
 
@@ -210,6 +323,11 @@ def obtener_sistemas_en_fallo():
 
 
 def obtener_artefactos_requeridos_sistema(sistema):
+    """
+    Entrada: sistema (str).
+    Salida: list[str].
+    Funcionamiento: Retorna los artefactos necesarios para reparar el sistema en el módulo actual.
+    """
     jugador = consultar_uno("jugador(Modulo)") or {}
     ubicacion = str(jugador.get("Modulo") or "")
 
@@ -218,18 +336,38 @@ def obtener_artefactos_requeridos_sistema(sistema):
 
 
 def rescatar(tripulante):
+    """
+    Entrada: tripulante (str).
+    Salida: bool.
+    Funcionamiento: Intenta rescatar al tripulante mediante Prolog; retorna True si tuvo éxito.
+    """
     return consultar_uno(f"rescatar({tripulante})") is not None
 
 
 def puedo_ir(destino):
+    """
+    Entrada: destino (str).
+    Salida: bool.
+    Funcionamiento: Verifica si el jugador puede moverse al módulo destino desde la ubicación actual.
+    """
     return consultar_uno(f"puedo_ir({destino})") is not None
 
 
 def mover(modulo):
+    """
+    Entrada: modulo (str).
+    Salida: bool.
+    Funcionamiento: Intenta mover al jugador al módulo indicado; retorna True si tuvo éxito.
+    """
     return consultar_uno(f"mover({modulo})") is not None
 
 
 def obtener_destinos_disponibles():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna los módulos a los que el jugador puede moverse desde la ubicación actual.
+    """
     destinos = []
     for resultado in consultar_todos("modulo(Destino, _)"):
         destino = str(resultado.get("Destino") or "")
@@ -239,27 +377,52 @@ def obtener_destinos_disponibles():
 
 
 def donde_esta(artefacto):
+    """
+    Entrada: artefacto (str).
+    Salida: str.
+    Funcionamiento: Retorna el módulo donde se encuentra actualmente el artefacto.
+    """
     resultado = consultar_uno(f"donde_esta({artefacto}, Modulo)") or {}
     return str(resultado.get("Modulo") or "")
 
 
 def que_tengo():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna la lista de artefactos que el jugador tiene en el inventario.
+    """
     resultado = consultar_uno("que_tengo(Lista)") or {}
     return lista_a_texto(resultado.get("Lista"))
 
 
 def usados():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna la lista de artefactos que ya han sido usados.
+    """
     resultado = consultar_uno("usados(Lista)") or {}
     return lista_a_texto(resultado.get("Lista"))
 
 
 def obtener_artefactos_usables():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna los artefactos del inventario que aún no han sido usados.
+    """
     inventario = que_tengo()
     usados_actuales = set(usados())
     return [artefacto for artefacto in inventario if artefacto not in usados_actuales]
 
 
 def obtener_artefactos_disponibles():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna los artefactos presentes en el módulo actual que el jugador aún no posee.
+    """
     jugador = consultar_uno("jugador(Modulo)") or {}
     ubicacion = str(jugador.get("Modulo") or "")
 
@@ -273,6 +436,11 @@ def obtener_artefactos_disponibles():
 
 
 def obtener_artefactos_faltantes():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna todos los artefactos del juego que el jugador no tiene en el inventario.
+    """
     inventario = set(que_tengo())
     artefactos = []
     for resultado in consultar_todos("artefacto(Artefacto, Modulo)"):
@@ -283,6 +451,12 @@ def obtener_artefactos_faltantes():
 
 
 def obtener_inventario_artefactos():
+    """
+    Entrada: Ninguna.
+    Salida: list[dict].
+    Funcionamiento: Retorna una lista con detalles de cada artefacto del inventario
+                    (nombre, si fue usado y módulo donde se obtuvo).
+    """
     inventario = que_tengo()
     usados_actuales = set(usados())
     artefactos = []
@@ -298,11 +472,21 @@ def obtener_inventario_artefactos():
 
 
 def modulos_visitados():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna la lista de módulos visitados por el jugador.
+    """
     resultado = consultar_uno("modulos_visitados(Lista)") or {}
     return lista_a_texto(resultado.get("Lista"))
 
 
 def ruta(inicio, fin):
+    """
+    Entrada: inicio (str), fin (str).
+    Salida: list[str].
+    Funcionamiento: Calcula y retorna la ruta más corta entre dos módulos.
+    """
     if not inicio or not fin:
         return []
     resultado = consultar_uno(f"ruta({inicio},{fin},Ruta)") or {}
@@ -311,6 +495,11 @@ def ruta(inicio, fin):
 
 
 def obtener_modulos():
+    """
+    Entrada: Ninguna.
+    Salida: list[str].
+    Funcionamiento: Retorna la lista de todos los módulos del juego.
+    """
     modulos = []
     for resultado in consultar_todos("modulo(Modulo, _)"):
         modulo = str(resultado.get("Modulo") or "")
@@ -320,14 +509,19 @@ def obtener_modulos():
 
 
 def obtener_descripcion_modulo(modulo):
+    """
+    Entrada: modulo (str).
+    Salida: str.
+    Funcionamiento: Retorna la descripción textual del módulo indicado.
+    """
     resultado = consultar_uno(f"modulo({modulo}, Descripcion)") or {}
     return str(resultado.get("Descripcion") or "")
 
 def obtener_enlaces():
     """
-    Retorna todos los enlaces entre modulos como lista de tuplas (modulo1, modulo2).
-    Entrada: ninguna.
-    Salida: lista de tuplas de strings.
+    Entrada: Ninguna.
+    Salida: list[tuple[str, str]].
+    Funcionamiento: Retorna todos los enlaces entre módulos como pares ordenados.
     """
     enlaces = []
     vistos = set()
@@ -342,6 +536,12 @@ def obtener_enlaces():
     return enlaces
 
 def como_gano():
+    """
+    Entrada: Ninguna.
+    Salida: list[list[dict]].
+    Funcionamiento: Consulta posibles planes para ganar; retorna una lista de planes,
+                    cada uno compuesto por pasos con acción y argumento.
+    """
     resultado = consultar_uno("como_gano(Planes)") or {}
     planes_prolog = resultado.get("Planes") or []
 
@@ -365,11 +565,10 @@ def como_gano():
 
 def verifica_gane():
     """
-    Verifica si se alcanzó la condición de victoria.
-    
-    Retorna: 
-      - True si gano/0 se cumple, junto con un veredicto con el estado final
-      - False si no se cumple la condición de victoria
+    Entrada: Ninguna.
+    Salida: tuple (bool, dict o None).
+    Funcionamiento: Verifica si se alcanzó la victoria. Retorna True y un resumen del estado final
+                    si se cumple, o False y None en caso contrario.
     """
     resultado = consultar_uno("verifica_gane")
     

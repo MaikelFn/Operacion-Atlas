@@ -10,10 +10,10 @@ import logica_interfaz as logica_interfaz
 
 def construir(ventana, on_jugar):
     """
-    Construye y retorna el frame del menú principal.
-
-    :param ventana:   La ventana raíz de Tkinter.
-    :param on_jugar:  Callback que se ejecuta al presionar JUGAR.
+    Entrada: ventana (tk.Tk), on_jugar (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna el frame del menú principal con el título
+                    y los botones JUGAR y SALIR.
     """
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
 

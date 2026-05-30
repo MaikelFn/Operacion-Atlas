@@ -19,11 +19,9 @@ _lista_sistemas_req_frame  = None
 
 def construir(ventana, on_volver):
     """
-    Construye el frame de rescate de tripulantes.
-
-    :param ventana:   Ventana raíz de Tkinter.
-    :param on_volver: Callback para regresar a la pantalla de juego.
-    :returns: frame construido.
+    Entrada: ventana (tk.Tk), on_volver (callable).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna la interfaz de rescate de tripulantes.
     """
     global _seleccion_tripulante_var, _lista_tripulantes_frame, _lista_sistemas_req_frame
 
@@ -90,7 +88,11 @@ def construir(ventana, on_volver):
 
 
 def actualizar():
-    """Recarga la lista de tripulantes atrapados en el módulo actual."""
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Recarga la lista de tripulantes atrapados en el módulo actual.
+    """
     for w in _lista_tripulantes_frame.winfo_children():
         w.destroy()
     for w in _lista_sistemas_req_frame.winfo_children():
@@ -115,6 +117,11 @@ def actualizar():
 
 
 def _seleccionar_tripulante(tripulante):
+    """
+    Entrada: tripulante (str).
+    Salida: Ninguna.
+    Funcionamiento: Muestra los sistemas requeridos para rescatar al tripulante seleccionado.
+    """
     _seleccion_tripulante_var.set(tripulante)
 
     for w in _lista_sistemas_req_frame.winfo_children():
@@ -137,6 +144,11 @@ def _seleccionar_tripulante(tripulante):
 
 
 def _ejecutar_rescate(on_volver):
+    """
+    Entrada: on_volver (callable).
+    Salida: Ninguna.
+    Funcionamiento: Intenta rescatar al tripulante seleccionado y muestra el resultado.
+    """
     tripulante = _seleccion_tripulante_var.get().strip()
     if not tripulante:
         messagebox.showwarning("Rescatar", "Selecciona primero un tripulante.")

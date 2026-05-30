@@ -12,23 +12,11 @@ import logica_interfaz as logica_interfaz
 
 def construir(frame_juego, callbacks):
     """
-    Construye el panel derecho del juego dentro de frame_juego.
-
-    :param frame_juego: Frame contenedor
-    :param callbacks:   Dict con las funciones a ejecutar por cada botón:
-                        {
-                          "mover":      fn,
-                          "ruta":       fn,
-                          "tomar":      fn,
-                          "usar":       fn,
-                          "donde":      fn,
-                          "inventario": fn,
-                          "reparar":    fn,
-                          "rescatar":   fn,
-                          "visitados":  fn,
-                          "victoria":   fn,
-                          "menu":       fn,
-                        }
+    Entrada: frame_juego (tk.Frame), callbacks (dict).
+    Salida: Ninguna.
+    Funcionamiento: Construye el panel derecho del juego dentro de frame_juego.
+                    Crea botones para movimiento, artefactos, sistemas, tripulación,
+                    estado y victoria.
     """
     panel_derecho = tk.Frame(frame_juego, bg=estilos.COLOR_FONDO)
     panel_derecho.pack(side="left", fill="both", expand=True, padx=(12, 18), pady=16)
