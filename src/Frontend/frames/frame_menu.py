@@ -8,12 +8,12 @@ import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-def construir(ventana, on_jugar):
+def construir(ventana, on_jugar, on_repeticion):
     """
-    Entrada: ventana (tk.Tk), on_jugar (callable).
+    Entrada: ventana (tk.Tk), on_jugar (callable), on_repeticion (callable).
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna el frame del menú principal con el título
-                    y los botones JUGAR y SALIR.
+                    y los botones JUGAR, REPETICION y SALIR.
     """
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
 
@@ -39,8 +39,8 @@ def construir(ventana, on_jugar):
     ).pack(pady=10)
     tk.Button(
         frame, text="REPETICION", pady=16,
-        command=None,
-        **estilos.estilo_boton()
+        command=on_repeticion,
+        **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)
     ).pack(pady=10)
     tk.Button(
         frame, text="SALIR", pady=16,

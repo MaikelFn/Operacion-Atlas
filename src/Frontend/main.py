@@ -80,7 +80,7 @@ modulo_frame_juego.construir(frame_juego, callbacks={
 })
 
 # Frame de menú (se construye al final para capturar lambdas correctamente)
-frame_menu_principal = modulo_frame_menu.construir(ventana, on_jugar=lambda: abrir_juego())
+frame_menu_principal = modulo_frame_menu.construir(ventana, on_jugar=lambda: abrir_juego(), on_repeticion=lambda: cargar_repeticion())
 
 
 # ──────────────────────────────────────────────
@@ -116,6 +116,20 @@ def guardar_partida_con_confirmacion(ventana):
     if respuesta:
         logica_interfaz.guardar_partida()
         messagebox.showinfo("Partida Guardada", "Tu partida ha sido guardada exitosamente.")
+
+
+def cargar_repeticion():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Carga y reproduce la partida guardada, luego muestra el frame de juego.
+    """
+    if logica_interfaz.reproducir_partida():
+        actualizar_estado()
+        logica_interfaz.ir_a_jugar()
+        messagebox.showinfo("Repetición Cargada", "Partida reproducida exitosamente.")
+    else:
+        messagebox.showerror("Error", "No se pudo cargar la partida guardada.")
 
 
 def actualizar_estado():
