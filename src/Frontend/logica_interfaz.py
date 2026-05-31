@@ -19,9 +19,7 @@ frame_como_gano = None
 
 # Ruta
 archivo_logica = Path(__file__).resolve().parent.parent / "Backend" / "logica.pl"
-archivo_conocimiento = Path(__file__).resolve().parent.parent / "Backend" / "conocimiento.pl"
 _prolog = Prolog()
-_prolog.consult(str(archivo_conocimiento).replace("\\", "/"))
 _prolog.consult(str(archivo_logica).replace("\\", "/"))
 
 

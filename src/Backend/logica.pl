@@ -11,8 +11,6 @@
 :- dynamic sistemas_reparados/1.
 :- dynamic ruta_historial/1.
 :- dynamic comandos/1.
-:- dynamic objetivoS/2.
-:- dynamic objetivoT/2.
 :- consult('../Backend/conocimiento.pl').
 % =========================================
 % ESTADO INICIAL
@@ -484,37 +482,34 @@ historial_ruta(Lista) :-
 
 % Nombre: cumple_objetivos_sistemas/0
 % Entrada: Ninguna
-% Salida: Verdadero si todos los objetivos de sistemas estan restaurados (o no hay objetivos)
-% Funcion: Comprueba que cada objetivoS/2 requerido termine en estado restaurado.
+% Salida: Verdadero si todos los objetivos de sistemas estan restaurados
+% Funcion: Comprueba que cada objetivoS/2 requerido termine en estado restaurado
 % Autor: Maikel Flores
 cumple_objetivos_sistemas :-
-    findall(S, objetivoS(S, restaurado), Sistemas),
-    (   Sistemas = []
-    ;   forall(member(S, Sistemas), esta_reparado(S))
+    forall(
+        objetivoS(Sistema, restaurado),
+        esta_reparado(Sistema)
     ).
 
 % Nombre: cumple_objetivos_tripulantes/0
 % Entrada: Ninguna
-% Salida: Verdadero si todos los objetivos de tripulantes estan rescatados (o no hay objetivos)
-% Funcion: Comprueba que cada objetivoT/2 requerido termine en estado rescatado.
+% Salida: Verdadero si todos los objetivos de tripulantes estan rescatados
+% Funcion: Comprueba que cada objetivoT/2 requerido termine en estado rescatado
 % Autor: Maikel Flores
 cumple_objetivos_tripulantes :-
-    findall(T, objetivoT(T, rescatado), Tripulantes),
-    (   Tripulantes = []
-    ;   forall(member(T, Tripulantes), esta_rescatado(T))
+    forall(
+        objetivoT(Tripulante, rescatado),
+        esta_rescatado(Tripulante)
     ).
 
 % Nombre: gano/0
 % Entrada: Ninguna
-% Salida: Verdadero si se cumplieron todos los objetivos (o no hay ninguno)
-% Funcion: Determina la condicion de victoria completa del juego.
+% Salida: Verdadero si se cumplieron todos los objetivos
+% Funcion: Determina la condicion de victoria completa del juego
 % Autor: Maikel Flores
 gano :-
-    (   \+ objetivoS(_, restaurado),
-        \+ objetivoT(_, rescatado);
-        cumple_objetivos_sistemas,
-        cumple_objetivos_tripulantes
-    ).
+    cumple_objetivos_sistemas,
+    cumple_objetivos_tripulantes.
 
 % =========================================
 % PLANIFICADOR DE SOLUCION
@@ -689,7 +684,6 @@ pasos_para_tripulantes_ord([Trip|Resto], E0, EFinal, Pasos) :-
 % Entrada: Ninguna (variable de salida)
 % Salida: Un plan completo de pasos para ganar
 % Funcion: Genera un plan coherente permutando ordenes de sistemas y tripulantes
-%          Si no hay objetivos, devuelve plan vacío (victoria automática)
 % Autor: Tayler Wynta
 generar_plan(Plan) :-
     jugador(ModuloInicial),
@@ -701,7 +695,8 @@ generar_plan(Plan) :-
     permutation(Tripulantes, OrdenTripulantes),
     pasos_para_sistemas_ord(OrdenSistemas,    EstadoIni,  EstadoTras, PasosSistemas),
     pasos_para_tripulantes_ord(OrdenTripulantes, EstadoTras, _,          PasosTripulantes),
-    append(PasosSistemas, PasosTripulantes, Plan).
+    append(PasosSistemas, PasosTripulantes, Plan),
+    Plan \= [].
 
 % Nombre: como_gano/1
 % Entrada: Ninguna (variable de salida)
@@ -719,9 +714,28 @@ como_gano(Planes) :-
 
 % Nombre: verifica_gane/0
 % Entrada: Ninguna
-% Salida: Verdadero si se alcanzó la condición de ganar, falso en caso contrario
-% Funcion: Verifica la condición de victoria sin imprimir mensajes en consola
+% Salida: Imprime el resumen de victoria si se alcanzó la condición de ganar
+% Funcion: Si gano/0 es verdadero, recopila y muestra por consola la ruta realizada, artefactos logrados, sistemas reparados y tripulantes rescatados
 % Autor: Tayler Wynta
 verifica_gane :-
     gano,
-    !.
+    !,
+    write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'), nl,
+    write('¡CONDICION DE VICTORIA ALCANZADA!'), nl,
+    write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'), nl, nl,
+    
+    write('RUTA REALIZADA:'), nl,
+    ruta_historial(Ruta),
+    write(Ruta), nl, nl,
+    
+    write('ARTEFACTOS LOGRADOS:'), nl,
+    artefactosLogrados(Artefactos),
+    write(Artefactos), nl, nl,
+    
+    write('SISTEMAS REPARADOS:'), nl,
+    sistemas_reparados(Sistemas),
+    write(Sistemas), nl, nl,
+    
+    write('TRIPULACION RESCATADA:'), nl,
+    tripulantes_rescatados(Tripulantes),
+    write(Tripulantes), nl.
