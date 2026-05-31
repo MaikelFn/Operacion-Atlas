@@ -73,7 +73,7 @@ def obtener_estado_jugador():
     ubicacion = str(jugador.get("Modulo") or "") or "desconocido"
 
     descripcion = consultar_uno(f"modulo({ubicacion}, Descripcion)") or {}
-    descripcion_modulo = str(descripcion.get("Descripcion") or "") or "Sin descripcion disponible."
+    descripcion_modulo = limpiar_string(descripcion.get("Descripcion") or "") or "Sin descripcion disponible."
 
     artefactos = consultar_uno("que_tengo(Lista)") or {}
     artefactos_tenidos = lista_a_texto(artefactos.get("Lista"))
@@ -605,6 +605,34 @@ def verifica_gane():
     
     return False, None
 
+def obtener_modulo_inicial():
+    """
+    Entrada: Ninguna.
+    Salida: str.
+    Funcionamiento: Retorna el modulo inicial del juego consultando el ultimo
+                    elemento de la lista de visitados, que fue el primero registrado.
+    """
+    resultado = consultar_uno("modulos_visitados(Lista)") or {}
+    lista = resultado.get("Lista") or []
+    if isinstance(lista, list) and len(lista) > 0:
+        return str(lista[-1])
+    jugador = consultar_uno("jugador(Modulo)") or {}
+    return str(jugador.get("Modulo") or "")
+
+
+def limpiar_string(valor):
+    """
+    Entrada: valor (str o bytes-string de Prolog).
+    Salida: str limpio.
+    Funcionamiento: Elimina el prefijo b'...' que Prolog retorna en strings con comillas.
+    """
+    t = str(valor)
+    if t.startswith("b'") and t.endswith("'"):
+        return t[2:-1]
+    if t.startswith('b"') and t.endswith('"'):
+        return t[2:-1]
+    return t
+
 
 def guardar_partida():
     """
@@ -650,4 +678,6 @@ __all__ = [
     "obtener_enlaces",
     "como_gano",
     "verifica_gane",
+    "obtener_modulo_inicial",
+    "limpiar_string",
 ]

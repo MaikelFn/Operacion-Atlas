@@ -6,6 +6,8 @@ Crea la ventana principal y orquesta la navegacion entre todos los frames.
 
 import sys
 import os
+import ctypes
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 # Asegura que Python encuentre los modulos del Frontend
 sys.path.insert(0, os.path.dirname(__file__))
@@ -25,6 +27,7 @@ import frames.frame_tripulantes as modulo_frame_tripulantes
 import frames.frame_modulos     as modulo_frame_modulos
 import frames.frame_victoria    as modulo_frame_victoria
 import frames.frame_como_gano   as modulo_frame_como_gano
+import frames.frame_mapa        as modulo_frame_mapa
 
 
 # ──────────────────────────────────────────────
@@ -33,7 +36,7 @@ import frames.frame_como_gano   as modulo_frame_como_gano
 
 ventana = tk.Tk()
 ventana.title("Operacion Atlas")
-ventana.geometry("900x550")
+ventana.geometry("1200x700")
 ventana.resizable(False, False)
 ventana.configure(bg=estilos.COLOR_FONDO)
 
@@ -43,7 +46,7 @@ ventana.configure(bg=estilos.COLOR_FONDO)
 # ──────────────────────────────────────────────
 
 # Frames contenedores persistentes
-frame_juego      = tk.Frame(ventana, bg=estilos.COLOR_FONDO, width=900, height=550)
+frame_juego      = tk.Frame(ventana, bg=estilos.COLOR_FONDO, width=1200, height=700)
 frame_mover      = modulo_frame_movimiento.construir(ventana, on_volver=lambda: abrir_juego())
 frame_tomar      = modulo_frame_artefactos.construir_tomar(ventana, on_volver=lambda: abrir_juego())
 frame_usar       = modulo_frame_artefactos.construir_usar(ventana, on_volver=lambda: abrir_juego())
@@ -56,11 +59,15 @@ frame_ruta       = modulo_frame_modulos.construir_ruta(ventana, on_volver=lambda
 frame_victoria   = modulo_frame_victoria.construir(ventana, on_volver=lambda: abrir_juego())
 frame_como_gano  = modulo_frame_como_gano.construir(ventana, on_volver=lambda: abrir_juego())
 
-frame_juego.config(width=900, height=550)
+frame_juego.config(width=1200, height=700)
 frame_juego.pack_propagate(False)
 
 # Panel izquierdo de estado (dentro del frame de juego)
 texto_estado = modulo_frame_estado.construir(frame_juego)
+
+# Panel central del mapa (dentro del frame de juego)
+panel_mapa = modulo_frame_mapa.construir(frame_juego)
+panel_mapa.pack(side="left", fill="y", padx=(0, 0), pady=14)
 
 # Panel derecho de acciones (dentro del frame de juego)
 modulo_frame_juego.construir(frame_juego, callbacks={
@@ -139,6 +146,7 @@ def actualizar_estado():
     Funcionamiento: Refresca el panel de estado dentro del frame de juego.
     """
     modulo_frame_estado.actualizar(texto_estado)
+    modulo_frame_mapa.actualizar()
 
 
 def abrir_juego():
