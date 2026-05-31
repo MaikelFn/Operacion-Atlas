@@ -11,9 +11,9 @@ import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # MÓDULOS VISITADOS
-# ──────────────────────────────────────────────
+# ==============================================
 
 _vis_seleccion_var   = None
 _vis_descripcion_var = None
@@ -120,9 +120,9 @@ def _seleccionar_visitado(modulo):
     _vis_descripcion_var.set(logica_interfaz.obtener_descripcion_modulo(modulo))
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # BUSCAR RUTA ENTRE MÓDULOS
-# ──────────────────────────────────────────────
+# ==============================================
 
 _cb_inicio      = None
 _cb_destino     = None
@@ -235,7 +235,7 @@ def construir_ruta(ventana, on_volver):
     contenedor = tk.Frame(frame, bg=estilos.COLOR_FONDO)
     contenedor.pack(fill="both", expand=True, padx=18, pady=16)
 
-    # ── Panel izquierdo: título + lista de nodos con scroll ──
+    # == Panel izquierdo: título + lista de nodos con scroll ==
     panel_left = tk.Frame(contenedor, bg=estilos.COLOR_FONDO)
     panel_left.pack(side="left", fill="both", expand=True, padx=(0, 14))
 
@@ -272,7 +272,7 @@ def construir_ruta(ventana, on_volver):
         font=("Courier", 11, "italic"),
     ).pack(pady=8)
 
-    # ── Panel derecho: controles ──
+    # == Panel derecho: controles ==
     panel_right = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=220)
     panel_right.pack(side="left", fill="y")
     panel_right.pack_propagate(False)

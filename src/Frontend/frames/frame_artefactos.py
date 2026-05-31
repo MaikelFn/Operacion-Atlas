@@ -13,9 +13,9 @@ import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # TOMAR ARTEFACTO
-# ──────────────────────────────────────────────
+# ==============================================
 
 _tomar_seleccion_var  = None
 _tomar_origen_var     = None
@@ -121,9 +121,9 @@ def _ejecutar_tomar(on_volver):
         messagebox.showerror("Tomar", f"No se pudo tomar {artefacto}.")
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # USAR ARTEFACTO
-# ──────────────────────────────────────────────
+# ==============================================
 
 _usar_seleccion_var = None
 _usar_origen_var    = None
@@ -229,9 +229,9 @@ def _ejecutar_usar(on_volver):
         messagebox.showerror("Usar", f"No se pudo usar {artefacto}.")
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # DONDE ESTÁ EL ARTEFACTO
-# ──────────────────────────────────────────────
+# ==============================================
 
 _donde_seleccion_var = None
 _donde_ubicacion_var = None
@@ -326,9 +326,9 @@ def _seleccionar_donde(artefacto):
     _donde_ubicacion_var.set(f"Se encuentra en: {modulo}")
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # INVENTARIO
-# ──────────────────────────────────────────────
+# ==============================================
 
 _inv_seleccion_var = None
 _inv_detalle_var   = None

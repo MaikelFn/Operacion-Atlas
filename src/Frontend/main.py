@@ -30,9 +30,9 @@ import frames.frame_como_gano   as modulo_frame_como_gano
 import frames.frame_mapa        as modulo_frame_mapa
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # VENTANA PRINCIPAL
-# ──────────────────────────────────────────────
+# ==============================================
 
 ventana = tk.Tk()
 ventana.title("Operacion Atlas")
@@ -41,9 +41,9 @@ ventana.resizable(False, False)
 ventana.configure(bg=estilos.COLOR_FONDO)
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # CONSTRUCCIÓN DE FRAMES
-# ──────────────────────────────────────────────
+# ==============================================
 
 # Frames contenedores persistentes
 frame_juego      = tk.Frame(ventana, bg=estilos.COLOR_FONDO, width=1200, height=700)
@@ -90,9 +90,9 @@ modulo_frame_juego.construir(frame_juego, callbacks={
 frame_menu_principal = modulo_frame_menu.construir(ventana, on_jugar=lambda: abrir_juego(), on_repeticion=lambda: cargar_repeticion())
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # REGISTRO DE FRAMES EN logica_interfaz
-# ──────────────────────────────────────────────
+# ==============================================
 
 logica_interfaz.frame_menu       = frame_menu_principal
 logica_interfaz.frame_juego      = frame_juego

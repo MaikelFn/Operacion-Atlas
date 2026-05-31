@@ -18,9 +18,9 @@ import logica_interfaz as logica_interfaz
 import estilos as estilos
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # CONSTANTES
-# ──────────────────────────────────────────────
+# ==============================================
 
 ANCHO_CANVAS = 420
 ALTO_CANVAS  = 630
@@ -47,16 +47,16 @@ _modulo_anterior = ""
 _ultimo_actual   = ""
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # CONSTRUCCION
-# ──────────────────────────────────────────────
+# ==============================================
 
 def construir(parent):
     """
-    Construye el panel del mapa dentro de parent.
-
-    :param parent: Frame contenedor (frame_juego).
-    :returns: frame construido.
+    Entrada: parent (tk.Frame).
+    Salida: frame (tk.Frame).
+    Funcionamiento: Construye y retorna el panel del mapa centrado en el jugador,
+                    con canvas para dibujar nodos y conexiones.
     """
     global _canvas
 
@@ -81,12 +81,17 @@ def construir(parent):
     return frame
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # LAYOUT CENTRADO EN EL JUGADOR
-# ──────────────────────────────────────────────
+# ==============================================
 
 def _construir_grafo(modulos, enlaces):
-    """Construye diccionario de adyacencia bidireccional."""
+    """
+    Entrada: modulos (list[str]), enlaces (list[tuple[str, str]]).
+    Salida: dict {modulo: list[str]}.
+    Funcionamiento: Construye y retorna un grafo de adyacencia bidireccional
+                    a partir de la lista de modulos y sus conexiones.
+    """
     grafo = {m: [] for m in modulos}
     for a, b in enlaces:
         if a in grafo and b in grafo:
@@ -97,8 +102,11 @@ def _construir_grafo(modulos, enlaces):
 
 def _obtener_nodos_visibles(actual, grafo, profundidad=2):
     """
-    Retorna dict {modulo: nivel} con los nodos dentro de 'profundidad'
-    saltos desde 'actual'. nivel 0 = actual, nivel 1 = vecinos, etc.
+    Entrada: actual (str), grafo (dict), profundidad (int).
+    Salida: dict {modulo: nivel}.
+    Funcionamiento: Retorna los nodos alcanzables desde 'actual' dentro de
+                    'profundidad' saltos. Nivel 0 es el nodo actual,
+                    nivel 1 sus vecinos directos, nivel 2 los siguientes.
     """
     visibles = {actual: 0}
     cola = [actual]
@@ -115,11 +123,11 @@ def _obtener_nodos_visibles(actual, grafo, profundidad=2):
 
 def _calcular_posiciones(actual, grafo, profundidad=2):
     """
-    Calcula posiciones (x, y) centradas en el canvas.
-    Nivel 0 → centro
-    Nivel 1 → circulo interior
-    Nivel 2 → circulo exterior
-    Los nodos de cada nivel se distribuyen equidistantes en el circulo.
+    Entrada: actual (str), grafo (dict), profundidad (int).
+    Salida: tuple (dict {modulo: (x, y)}, dict {modulo: nivel}).
+    Funcionamiento: Calcula las posiciones en el canvas para cada nodo visible.
+                    El nodo actual va al centro, los niveles siguientes se
+                    distribuyen en circulos concentricos equidistantes.
     """
     cx = ANCHO_CANVAS / 2
     cy = (ALTO_CANVAS - 30) / 2
@@ -155,12 +163,17 @@ def _calcular_posiciones(actual, grafo, profundidad=2):
     return posiciones, visibles
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # HELPERS
-# ──────────────────────────────────────────────
+# ==============================================
 
 def _nombre_corto(modulo):
-    """Acorta el nombre para que quepa en el nodo."""
+    """
+    Entrada: modulo (str).
+    Salida: str.
+    Funcionamiento: Acorta el nombre del modulo dividiendo por guion bajo
+                    para que quepa dentro del circulo del nodo en el canvas.
+    """
     partes = modulo.split("_")
     if len(partes) == 1:
         return modulo[:8]
@@ -168,7 +181,12 @@ def _nombre_corto(modulo):
 
 
 def _estado_nodo(modulo, actual, anterior, visitados, inicial):
-    """Retorna (relleno, color_texto, radio, borde, grosor) segun estado."""
+    """
+    Entrada: modulo, actual, anterior, visitados, inicial (str / set).
+    Salida: tuple (relleno, color_texto, radio, borde, grosor).
+    Funcionamiento: Determina el estilo visual del nodo segun su estado:
+                    actual, anterior, inicial, visitado u oculto.
+    """
     if modulo == actual:
         return C_ACTUAL, T_NODO, RADIO_NODO + 4, estilos.COLOR_BOTON_TEXTO, 2
     if modulo == anterior:
@@ -181,7 +199,12 @@ def _estado_nodo(modulo, actual, anterior, visitados, inicial):
 
 
 def _color_linea(a, b, visitados, actual, anterior):
-    """Determina color, ancho y dash de la linea."""
+    """
+    Entrada: a, b (str), visitados (set), actual, anterior (str).
+    Salida: tuple (color, ancho, dash).
+    Funcionamiento: Determina el color, grosor y estilo de la linea entre
+                    dos nodos segun el estado de los modulos que conecta.
+    """
     par = {a, b}
     if actual in par and anterior in par:
         return L_ANTERIOR, 2, ()
@@ -190,12 +213,18 @@ def _color_linea(a, b, visitados, actual, anterior):
     return L_OCULTA, 1, (4, 4)
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # DIBUJO
-# ──────────────────────────────────────────────
+# ==============================================
 
 def _dibujar():
-    """Redibuja el mapa centrado en el jugador actual."""
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Borra el canvas y redibuja el mapa completo centrado en
+                    el modulo actual del jugador, mostrando hasta 2 niveles
+                    de profundidad con sus colores y conexiones correspondientes.
+    """
     if _canvas is None:
         return
 
@@ -270,12 +299,17 @@ def _dibujar():
         x_leg += 62
 
 
-# ──────────────────────────────────────────────
+# ==============================================
 # PUBLICA
-# ──────────────────────────────────────────────
+# ==============================================
 
 def actualizar():
-    """Redibuja el mapa con el estado actual del juego."""
+    """
+    Entrada: Ninguna (usa variables globales y logica_interfaz).
+    Salida: Ninguna.
+    Funcionamiento: Actualiza el modulo anterior si el jugador se movio,
+                    registra la nueva posicion actual y redibuja el mapa.
+    """
     global _modulo_anterior, _ultimo_actual
     estado = logica_interfaz.obtener_estado_jugador()
     actual = estado.get("ubicacion", "")
