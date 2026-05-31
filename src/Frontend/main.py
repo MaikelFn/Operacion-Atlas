@@ -56,7 +56,11 @@ frame_reparar    = modulo_frame_sistemas.construir(ventana, on_volver=lambda: ab
 frame_rescatar   = modulo_frame_tripulantes.construir(ventana, on_volver=lambda: abrir_juego())
 frame_visitados  = modulo_frame_modulos.construir_visitados(ventana, on_volver=lambda: abrir_juego())
 frame_ruta       = modulo_frame_modulos.construir_ruta(ventana, on_volver=lambda: abrir_juego())
-frame_victoria   = modulo_frame_victoria.construir(ventana, on_volver=lambda: abrir_juego())
+frame_victoria   = modulo_frame_victoria.construir(
+    ventana, 
+    on_volver=lambda: abrir_juego(),
+    on_menu=lambda: (logica_interfaz.reiniciar_juego(), logica_interfaz.ir_a_menu())
+)
 frame_como_gano  = modulo_frame_como_gano.construir(ventana, on_volver=lambda: abrir_juego())
 
 frame_juego.config(width=1200, height=700)

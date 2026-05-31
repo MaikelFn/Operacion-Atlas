@@ -13,10 +13,12 @@ import logica_interfaz as logica_interfaz
 _frame_contenedor = None
 _texto_victoria = None
 _boton_volver = None
+_boton_menu = None
 _callback_volver = None
+_callback_menu = None
 
 
-def construir(ventana, on_volver=None):
+def construir(ventana, on_volver=None, on_menu=None):
     """
     Entrada: ventana (tk.Tk), on_volver (callable o None).
     Salida: frame (tk.Frame).
@@ -26,9 +28,12 @@ def construir(ventana, on_volver=None):
     global _frame_contenedor
     global _texto_victoria
     global _callback_volver
+    global _callback_menu
     global _boton_volver
+    global _boton_menu
 
     _callback_volver = on_volver
+    _callback_menu = on_menu
 
     # Frame principal
     _frame_contenedor = tk.Frame(
@@ -69,9 +74,13 @@ def construir(ventana, on_volver=None):
         expand=True
     )
 
-    # BOTÓN VOLVER
+    # FRAME BOTONES
+    frame_botones = tk.Frame(_frame_contenedor, bg=estilos.COLOR_FONDO)
+    frame_botones.pack(pady=(8, 14))
+
+    # BOTÓN VOLVER AL JUEGO
     _boton_volver = tk.Button(
-        _frame_contenedor,
+        frame_botones,
         text="Volver al Juego",
         pady=12,
         command=lambda: _volver(),
@@ -79,9 +88,20 @@ def construir(ventana, on_volver=None):
             color_fg=estilos.COLOR_TEXTO_OSCURO
         )
     )
-    _boton_volver.pack(
-        pady=(8, 14)
+    _boton_volver.pack(side="left", padx=5)
+
+    # BOTÓN VOLVER AL MENÚ
+    _boton_menu = tk.Button(
+        frame_botones,
+        text="Volver al Menú Principal",
+        pady=12,
+        command=lambda: _volver_menu(),
+        **estilos.estilo_boton(
+            color_fg=estilos.COLOR_TEXTO_OSCURO
+        )
     )
+    _boton_menu.pack(side="left", padx=5)
+    _boton_menu.pack_forget()  # Oculto por defecto
 
     return _frame_contenedor
 
@@ -121,6 +141,10 @@ def actualizar():
 
     # VICTORIA ALCANZADA
     if exito:
+        # Mostrar ambos botones en victoria
+        _boton_volver.pack(side="left", padx=5)
+        _boton_menu.pack(side="left", padx=5)
+        
         _texto_victoria.insert(
             "end",
             "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
@@ -268,11 +292,11 @@ def actualizar():
 
     # VICTORIA PENDIENTE
     else:
-        estado_actual = logica_interfaz.obtener_estado_jugador()
-        sistemas_en_falla = estado_actual.get(
-            "sistemas_en_falla",
-            []
-        )
+        # Mostrar solo botón volver en victoria pendiente
+        _boton_volver.pack(side="left", padx=5)
+        _boton_menu.pack_forget()
+        
+        sistemas_objetivo = logica_interfaz.obtener_sistemas_objetivo_en_falla()
         tripulantes_atrapados = logica_interfaz.obtener_tripulantes_objetivo_atrapados()
         _texto_victoria.insert(
             "end",
@@ -298,13 +322,13 @@ def actualizar():
         )
 
         # SISTEMAS EN FALLA
-        if sistemas_en_falla:
+        if sistemas_objetivo:
             _texto_victoria.insert(
                 "end",
-                f"\n  Sistemas en Falla: {len(sistemas_en_falla)}\n",
+                f"\n  Sistemas en Falla: {len(sistemas_objetivo)}\n",
                 "item"
             )
-            for sistema_info in sistemas_en_falla:
+            for sistema_info in sistemas_objetivo:
                 modulo = sistema_info.get(
                     "modulo",
                     "desconocido"
@@ -362,7 +386,7 @@ def actualizar():
                     )
 
         # VALIDACIÓN FINAL
-        if not sistemas_en_falla and not tripulantes_atrapados:
+        if not sistemas_objetivo and not tripulantes_atrapados:
             _texto_victoria.insert(
                 "end",
                 "\n¡Verifica nuevamente para confirmar la victoria!\n",
@@ -399,3 +423,14 @@ def _volver():
 
     if _callback_volver:
         _callback_volver()
+
+
+def _volver_menu():
+    """
+    Entrada: Ninguna.
+    Salida: Ninguna.
+    Funcionamiento: Ejecuta el callback de volver al menú si está definido.
+    """
+
+    if _callback_menu:
+        _callback_menu()
