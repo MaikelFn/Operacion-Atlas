@@ -2,115 +2,84 @@
 frame_juego.py
 Panel derecho del HUD principal de juego:
 secciones de botones que dan acceso a todas las acciones disponibles
-(Movimiento, Artefactos, Sistemas y Tripulación, Estado y Victoria).
+(Movimiento, Artefactos, Sistemas y Tripulacion, Estado y Victoria).
+Botones en dos columnas fijas por grupo. Victoria ocupa ancho completo.
 """
 
 import tkinter as tk
 import estilos as estilos
-import logica_interfaz as logica_interfaz
 
 
 def construir(frame_juego, callbacks):
     """
     Entrada: frame_juego (tk.Frame), callbacks (dict).
     Salida: Ninguna.
-    Funcionamiento: Construye el panel derecho del juego dentro de frame_juego.
-                    Crea botones para movimiento, artefactos, sistemas, tripulación,
-                    estado y victoria.
+    Funcionamiento: Construye el panel de botones del juego dentro de frame_juego.
+                    Crea dos columnas fijas por grupo, con Victoria a ancho completo.
+                    Incluye boton de Guardar Partida.
     """
-    panel_derecho = tk.Frame(frame_juego, bg=estilos.COLOR_FONDO)
-    panel_derecho.pack(side="left", fill="both", expand=True, padx=(12, 18), pady=16)
+    panel = tk.Frame(frame_juego, bg=estilos.COLOR_FONDO)
+    panel.pack(side="left", fill="both", expand=True, padx=(8, 12), pady=14)
 
-    # Crear Canvas con Scrollbar
-    canvas = tk.Canvas(panel_derecho, bg=estilos.COLOR_FONDO, highlightthickness=0, bd=0)
-    scrollbar = tk.Scrollbar(panel_derecho, orient="vertical", command=canvas.yview, bg=estilos.COLOR_FONDO)
-    canvas.configure(yscrollcommand=scrollbar.set)
-    
-    canvas.pack(side="left", fill="both", expand=True)
-    scrollbar.pack(side="right", fill="y")
-
-    # Frame contenedor de botones dentro del Canvas
-    contenido = tk.Frame(canvas, bg=estilos.COLOR_FONDO)
-    canvas_window = canvas.create_window((0, 0), window=contenido, anchor="nw")
-    
-    def on_frame_configure(event=None):
-        canvas.configure(scrollregion=canvas.bbox("all"))
-    
-    def on_canvas_configure(event=None):
-        canvas.itemconfig(canvas_window, width=event.width)
-    
-    contenido.bind("<Configure>", on_frame_configure)
-    canvas.bind("<Configure>", on_canvas_configure)
-
-    # Permitir scroll con rueda del ratón
-    def on_mousewheel(event):
-        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-    
-    canvas.bind("<MouseWheel>", on_mousewheel)
-
-    def seccion(titulo):
-        marco = tk.Frame(contenido, bg=estilos.COLOR_FONDO)
-        marco.pack(fill="x", pady=(0, 14))
+    def subtitulo(texto):
+        tk.Frame(panel, bg=estilos.COLOR_BOTON_FONDO, height=1).pack(fill="x", pady=(6, 0))
         tk.Label(
-            marco, text=titulo,
-            **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "bold"))
-        ).pack(anchor="w", pady=(0, 6))
-        return marco
+            panel, text=texto,
+            **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 9, "bold"))
+        ).pack(anchor="w", pady=(3, 4))
 
-    # ── MOVIMIENTO ──
-    sec_mov = seccion("MOVIMIENTO")
-    fila = tk.Frame(sec_mov, bg=estilos.COLOR_FONDO)
-    fila.pack(anchor="w")
-    tk.Button(fila, text="Mover",    pady=9, command=callbacks["mover"],
-              **estilos.estilo_boton()).grid(row=0, column=0, padx=(0, 8))
-    tk.Button(fila, text="Ver ruta", pady=9, command=callbacks["ruta"],
-              **estilos.estilo_boton()).grid(row=0, column=1)
+    def fila_dos(txt1, cmd1, color1, txt2, cmd2, color2):
+        f = tk.Frame(panel, bg=estilos.COLOR_FONDO, height=38)
+        f.pack(fill="x", pady=(0, 3))
+        f.pack_propagate(False)
+        tk.Button(
+            f, text=txt1, pady=7,
+            command=cmd1,
+            bg=estilos.COLOR_BOTON_FONDO, fg=color1,
+            activebackground=estilos.COLOR_BOTON_FONDO, activeforeground=color1,
+            relief="flat", bd=0, cursor="hand2", font=("Courier", 10, "bold"),
+        ).place(relx=0, rely=0, relwidth=0.497, relheight=1)
+        tk.Button(
+            f, text=txt2, pady=7,
+            command=cmd2,
+            bg=estilos.COLOR_BOTON_FONDO, fg=color2,
+            activebackground=estilos.COLOR_BOTON_FONDO, activeforeground=color2,
+            relief="flat", bd=0, cursor="hand2", font=("Courier", 10, "bold"),
+        ).place(relx=0.503, rely=0, relwidth=0.497, relheight=1)
 
-    # ── ARTEFACTOS ──
-    sec_art = seccion("ARTEFACTOS")
-    fila = tk.Frame(sec_art, bg=estilos.COLOR_FONDO)
-    fila.pack(anchor="w")
-    tk.Button(fila, text="Tomar",      pady=8, command=callbacks["tomar"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=0, column=0, padx=(0, 6), pady=4)
-    tk.Button(fila, text="Usar",       pady=8, command=callbacks["usar"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=0, column=1, padx=(0, 6), pady=4)
-    tk.Button(fila, text="Donde",      pady=8, command=callbacks["donde"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=1, column=0, padx=(0, 6), pady=4)
-    tk.Button(fila, text="Inventario", pady=8, command=callbacks["inventario"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)).grid(row=1, column=1, padx=(0, 6), pady=4)
+    def fila_completa(texto, cmd, color):
+        tk.Button(
+            panel, text=texto, pady=9,
+            command=cmd,
+            bg=estilos.COLOR_BOTON_FONDO, fg=color,
+            activebackground=estilos.COLOR_BOTON_FONDO, activeforeground=color,
+            relief="flat", bd=0, cursor="hand2", font=("Courier", 11, "bold"),
+        ).pack(fill="x", pady=(0, 3))
 
-    # ── SISTEMAS Y TRIPULACION ──
-    sec_sys = seccion("SISTEMAS Y TRIPULACION")
-    fila = tk.Frame(sec_sys, bg=estilos.COLOR_FONDO)
-    fila.pack(anchor="w")
-    tk.Button(fila, text="Reparar",  pady=8, command=callbacks["reparar"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=0, padx=(0, 8), pady=4)
-    tk.Button(fila, text="Rescatar", pady=8, command=callbacks["rescatar"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)).grid(row=0, column=1, padx=(0, 8), pady=4)
+    # MOVIMIENTO
+    subtitulo("MOVIMIENTO")
+    fila_dos("Mover",    callbacks["mover"],    estilos.COLOR_BOTON_TEXTO,
+             "Ver ruta", callbacks["ruta"],     estilos.COLOR_BOTON_TEXTO)
 
-    # ── ESTADO Y VICTORIA ──
-    sec_est = seccion("ESTADO Y VICTORIA")
-    fila = tk.Frame(sec_est, bg=estilos.COLOR_FONDO)
-    fila.pack(anchor="w")
-    tk.Button(fila, text="Visitados", pady=8, command=callbacks["visitados"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=0, column=0, padx=(0, 8), pady=4)
-    tk.Button(fila, text="Como Gano", pady=8, command=callbacks["como_gano"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=0, column=1, padx=(0, 8), pady=4)
-    tk.Button(fila, text="Victoria",  pady=8, command=callbacks["victoria"],
-              **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)).grid(row=1, column=0, padx=(0, 8), pady=4)
+    # ARTEFACTOS
+    subtitulo("ARTEFACTOS")
+    fila_dos("Tomar",      callbacks["tomar"],      estilos.COLOR_VERDE,
+             "Usar",       callbacks["usar"],       estilos.COLOR_VERDE)
+    fila_dos("Donde",      callbacks["donde"],      estilos.COLOR_VERDE,
+             "Inventario", callbacks["inventario"], estilos.COLOR_VERDE)
 
-    # ── VOLVER AL MENÚ / GUARDAR PARTIDA ──
-    fila_final = tk.Frame(contenido, bg=estilos.COLOR_FONDO)
-    fila_final.pack(anchor="w", pady=(30, 0))
-    
-    tk.Button(
-        fila_final, text="Guardar Partida", pady=12,
-        command=callbacks["guardar"],
-        **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)
-    ).pack(side="left", padx=(0, 8))
-    
-    tk.Button(
-        fila_final, text="Volver al Menú", pady=12,
-        command=callbacks["menu"],
-        **estilos.estilo_boton(color_fg=estilos.COLOR_TEXTO_OSCURO)
-    ).pack(side="left")
+    # SISTEMAS Y TRIPULACION
+    subtitulo("SISTEMAS Y TRIPULACION")
+    fila_dos("Reparar",  callbacks["reparar"],  estilos.COLOR_AMARILLO,
+             "Rescatar", callbacks["rescatar"], estilos.COLOR_AMARILLO)
+
+    # ESTADO Y VICTORIA
+    subtitulo("ESTADO Y VICTORIA")
+    fila_dos("Visitados", callbacks["visitados"], estilos.COLOR_AZUL,
+             "Como Gano", callbacks["como_gano"], estilos.COLOR_AZUL)
+    fila_completa("VICTORIA", callbacks["victoria"], estilos.COLOR_AZUL)
+
+    # GUARDAR Y MENU
+    tk.Frame(panel, bg=estilos.COLOR_BOTON_FONDO, height=1).pack(fill="x", pady=(8, 4))
+    fila_dos("Guardar Partida", callbacks["guardar"], estilos.COLOR_VERDE,
+             "Volver al Menu",  callbacks["menu"],    estilos.COLOR_TEXTO_OSCURO)
