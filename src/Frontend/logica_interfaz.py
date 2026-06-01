@@ -544,7 +544,8 @@ def obtener_descripcion_modulo(modulo):
     Funcionamiento: Retorna la descripción textual del módulo indicado.
     """
     resultado = consultar_uno(f"modulo({modulo}, Descripcion)") or {}
-    return str(resultado.get("Descripcion") or "")
+    return limpiar_string(resultado.get("Descripcion") or "")
+
 
 def obtener_enlaces():
     """

@@ -408,7 +408,7 @@ def actualizar_inventario():
     for item in inventario:
         etiqueta = item["artefacto"]
         if item["usado"]:
-            etiqueta = f"{etiqueta}  [USADO]"
+            etiqueta = f"{etiqueta}\n[USADO]"
         tk.Button(_inv_lista_frame, text=etiqueta, pady=10,
                   command=lambda i=item: _seleccionar_inventario(i),
                   **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)
