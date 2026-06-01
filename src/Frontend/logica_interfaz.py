@@ -128,6 +128,28 @@ def obtener_tripulantes_objetivo_atrapados():
             })
     return tripulantes
 
+def obtener_sistemas_objetivo_en_falla():
+    """
+    Entrada: Ninguna.
+    Salida: list[dict].
+    Funcionamiento: Retorna solo los sistemas en falla que forman parte de los objetivos
+                    de victoria (condición objetivoS restaurado).
+    """
+    objetivos = set()
+    for r in consultar_todos("objetivoS(Sistema, restaurado)"):
+        objetivos.add(str(r.get("Sistema") or ""))
+
+    sistemas = []
+    for r in consultar_todos("sistema(Modulo, Sistema, Artefactos, fallo)"):
+        nombre = str(r.get("Sistema") or "")
+        if nombre in objetivos:
+            sistemas.append({
+                "modulo": str(r.get("Modulo") or ""),
+                "sistema": nombre,
+                "artefactos": lista_a_texto(r.get("Artefactos")),
+            })
+    return sistemas
+
 def mostrar_frame(frame):
     """
     Entrada: frame (tk.Frame).

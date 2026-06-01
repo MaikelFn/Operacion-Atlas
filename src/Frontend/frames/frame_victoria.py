@@ -268,12 +268,9 @@ def actualizar():
 
     # VICTORIA PENDIENTE
     else:
-        estado_actual = logica_interfaz.obtener_estado_jugador()
-        sistemas_en_falla = estado_actual.get(
-            "sistemas_en_falla",
-            []
-        )
+        sistemas_en_falla = logica_interfaz.obtener_sistemas_objetivo_en_falla()
         tripulantes_atrapados = logica_interfaz.obtener_tripulantes_objetivo_atrapados()
+
         _texto_victoria.insert(
             "end",
             "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",

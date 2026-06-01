@@ -714,28 +714,7 @@ como_gano(Planes) :-
 
 % Nombre: verifica_gane/0
 % Entrada: Ninguna
-% Salida: Imprime el resumen de victoria si se alcanzó la condición de ganar
-% Funcion: Si gano/0 es verdadero, recopila y muestra por consola la ruta realizada, artefactos logrados, sistemas reparados y tripulantes rescatados
+% Salida: Devuelve el gane si se alcanzó la condición de ganar
+% Funcion: Si gano/0 es verdadero, el jugador gana
 % Autor: Tayler Wynta
-verifica_gane :-
-    gano,
-    !,
-    write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'), nl,
-    write('¡CONDICION DE VICTORIA ALCANZADA!'), nl,
-    write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'), nl, nl,
-    
-    write('RUTA REALIZADA:'), nl,
-    ruta_historial(Ruta),
-    write(Ruta), nl, nl,
-    
-    write('ARTEFACTOS LOGRADOS:'), nl,
-    artefactosLogrados(Artefactos),
-    write(Artefactos), nl, nl,
-    
-    write('SISTEMAS REPARADOS:'), nl,
-    sistemas_reparados(Sistemas),
-    write(Sistemas), nl, nl,
-    
-    write('TRIPULACION RESCATADA:'), nl,
-    tripulantes_rescatados(Tripulantes),
-    write(Tripulantes), nl.
+verifica_gane :- gano, !.

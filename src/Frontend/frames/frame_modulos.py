@@ -6,14 +6,14 @@ Agrupa las dos pantallas relacionadas con módulos y navegación:
 """
 
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox
 import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-# ==============================================
+# ──────────────────────────────────────────────
 # MÓDULOS VISITADOS
-# ==============================================
+# ──────────────────────────────────────────────
 
 _vis_seleccion_var   = None
 _vis_descripcion_var = None
@@ -120,15 +120,20 @@ def _seleccionar_visitado(modulo):
     _vis_descripcion_var.set(logica_interfaz.obtener_descripcion_modulo(modulo))
 
 
-# ==============================================
+# ──────────────────────────────────────────────
 # BUSCAR RUTA ENTRE MÓDULOS
-# ==============================================
+# ──────────────────────────────────────────────
 
-_cb_inicio      = None
-_cb_destino     = None
+_lb_inicio      = None   # Listbox de origen
+_lb_destino     = None   # Listbox de destino
+_sel_inicio     = None   # Módulo de origen seleccionado (str)
+_sel_destino    = None   # Módulo de destino seleccionado (str)
+_idx_inicio     = None   # Índice del item marcado en lb_inicio
+_idx_destino    = None   # Índice del item marcado en lb_destino
 _lista_frame    = None   # frame interior del canvas donde se colocan los labels
 _canvas_ruta    = None
 _scroll_ruta    = None
+_lista_frame_id = None  # ID del create_window para reposicionar
 
 # Colores de los nodos
 _COLOR_ORIGEN    = "#4A90D9"   # Azul  — módulo de inicio
@@ -159,7 +164,7 @@ def _poblar_lista_ruta(ruta, inicio):
     Entrada: ruta (list[str]), inicio (str).
     Salida: Ninguna.
     Funcionamiento: Limpia el frame interior y crea un Label por cada nodo
-                    más un Label de flecha entre ellos. Sin cálculos de posición.
+                    más un Label de flecha entre ellos, centrados en el canvas.
     """
     for w in _lista_frame.winfo_children():
         w.destroy()
@@ -188,23 +193,24 @@ def _poblar_lista_ruta(ruta, inicio):
             bg = _COLOR_BLOQUEADO
             etiqueta = "✗ bloqueado"
 
-        # Contenedor del nodo para darle padding interno con el color de fondo
-        nodo = tk.Frame(_lista_frame, bg=bg, padx=14, pady=6)
+        # Nodo: ancho fijo grande, centrado
+        nodo = tk.Frame(_lista_frame, bg=bg, padx=0, pady=10, width=260, height=64)
         nodo.pack(pady=(0, 0))
+        nodo.pack_propagate(False)
 
         tk.Label(
             nodo,
             text=etiqueta,
             bg=bg, fg=_COLOR_NODO_TXT,
-            font=("Courier", 8, "bold"),
-        ).pack()
+            font=("Courier", 9, "bold"),
+        ).pack(expand=True)
 
         tk.Label(
             nodo,
             text=modulo,
             bg=bg, fg=_COLOR_NODO_TXT,
-            font=("Courier", 12, "bold"),
-        ).pack()
+            font=("Courier", 14, "bold"),
+        ).pack(expand=True)
 
         # Flecha entre nodos (excepto después del último)
         if i < len(ruta) - 1:
@@ -212,11 +218,15 @@ def _poblar_lista_ruta(ruta, inicio):
                 _lista_frame,
                 text="↓",
                 bg=estilos.COLOR_FONDO, fg=estilos.COLOR_TEXTO_OSCURO,
-                font=("Courier", 14, "bold"),
-            ).pack(pady=2)
+                font=("Courier", 16, "bold"),
+            ).pack(pady=3)
 
-    # Actualizar la región de scroll
+    # Centrar el frame interior en el canvas
     _canvas_ruta.update_idletasks()
+    canvas_w = _canvas_ruta.winfo_width()
+    frame_w  = _lista_frame.winfo_reqwidth()
+    x_offset = max(0, (canvas_w - frame_w) // 2)
+    _canvas_ruta.coords(_lista_frame_id, x_offset, 10)
     _canvas_ruta.config(scrollregion=_canvas_ruta.bbox("all"))
 
 
@@ -226,7 +236,11 @@ def construir_ruta(ventana, on_volver):
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna la interfaz para calcular ruta entre módulos.
     """
-    global _cb_inicio, _cb_destino, _lista_frame, _canvas_ruta, _scroll_ruta
+    global _lb_inicio, _lb_destino, _sel_inicio, _sel_destino, _idx_inicio, _idx_destino, _lista_frame, _canvas_ruta, _scroll_ruta, _lista_frame_id
+    _sel_inicio  = None
+    _sel_destino = None
+    _idx_inicio  = None
+    _idx_destino = None
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
     frame.config(width=900, height=550)
@@ -235,7 +249,7 @@ def construir_ruta(ventana, on_volver):
     contenedor = tk.Frame(frame, bg=estilos.COLOR_FONDO)
     contenedor.pack(fill="both", expand=True, padx=18, pady=16)
 
-    # == Panel izquierdo: título + lista de nodos con scroll ==
+    # ── Panel izquierdo: título + lista de nodos con scroll ──
     panel_left = tk.Frame(contenedor, bg=estilos.COLOR_FONDO)
     panel_left.pack(side="left", fill="both", expand=True, padx=(0, 14))
 
@@ -244,7 +258,6 @@ def construir_ruta(ventana, on_volver):
         **estilos.estilo_label(fg=estilos.COLOR_BOTON_TEXTO, font=("Courier", 18, "bold")),
     ).pack(anchor="w", pady=(0, 10))
 
-    # Canvas + scrollbar que contiene el frame de nodos
     wrap = tk.Frame(panel_left, bg=estilos.COLOR_FONDO)
     wrap.pack(fill="both", expand=True)
 
@@ -260,11 +273,18 @@ def construir_ruta(ventana, on_volver):
     _canvas_ruta.pack(side="left", fill="both", expand=True)
     _scroll_ruta.config(command=_canvas_ruta.yview)
 
-    # Frame interior donde viven los labels — anclado al canvas
     _lista_frame = tk.Frame(_canvas_ruta, bg=estilos.COLOR_FONDO)
-    _canvas_ruta.create_window((0, 0), window=_lista_frame, anchor="nw")
+    _lista_frame_id = _canvas_ruta.create_window((0, 10), window=_lista_frame, anchor="n")
 
-    # Mensaje inicial
+    def _centrar_lista(event=None):
+        canvas_w = _canvas_ruta.winfo_width()
+        frame_w  = _lista_frame.winfo_reqwidth()
+        x_offset = max(frame_w // 2, canvas_w // 2)
+        _canvas_ruta.coords(_lista_frame_id, x_offset, 10)
+        _canvas_ruta.config(scrollregion=_canvas_ruta.bbox("all"))
+
+    _canvas_ruta.bind("<Configure>", _centrar_lista)
+
     tk.Label(
         _lista_frame,
         text="Selecciona origen y destino para calcular la ruta.",
@@ -272,36 +292,93 @@ def construir_ruta(ventana, on_volver):
         font=("Courier", 11, "italic"),
     ).pack(pady=8)
 
-    # == Panel derecho: controles ==
-    panel_right = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=220)
-    panel_right.pack(side="left", fill="y")
+    panel_right = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=240)
+    panel_right.pack(side="left", fill="both")
     panel_right.pack_propagate(False)
 
-    tk.Label(panel_right, text="Inicio",
+    tk.Label(panel_right, text="Origen", 
              **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO,
                                     font=("Courier", 11, "bold"))).pack(anchor="w", pady=(6, 2))
-    _cb_inicio = ttk.Combobox(panel_right, values=logica_interfaz.obtener_modulos(),
-                               state="readonly", width=24)
-    _cb_inicio.pack(anchor="w", pady=(0, 10))
+
+    wrap_ini = tk.Frame(panel_right, bg=estilos.COLOR_FONDO)
+    wrap_ini.pack(fill="both", expand=True, pady=(0, 8))
+
+    sb_ini = tk.Scrollbar(wrap_ini, orient="vertical")
+    sb_ini.pack(side="right", fill="y")
+
+    _lb_inicio = tk.Listbox(
+        wrap_ini,
+        yscrollcommand=sb_ini.set,
+        selectmode="single",
+        bg="#1A1A2E", fg=estilos.COLOR_TEXTO,
+        selectbackground=_COLOR_ORIGEN, selectforeground=_COLOR_NODO_TXT,
+        font=("Courier", 11), borderwidth=0, highlightthickness=1,
+        highlightcolor=estilos.COLOR_AZUL, activestyle="none",
+    )
+    _lb_inicio.pack(side="left", fill="both", expand=True)
+    sb_ini.config(command=_lb_inicio.yview)
+
+    def _on_sel_inicio(event=None):
+        global _sel_inicio, _idx_inicio
+        sel = _lb_inicio.curselection()
+        if sel:
+            if _idx_inicio is not None:
+                _lb_inicio.itemconfig(_idx_inicio, bg="#1A1A2E", fg=estilos.COLOR_TEXTO)
+            _idx_inicio = sel[0]
+            _sel_inicio = _lb_inicio.get(_idx_inicio)
+            _lb_inicio.itemconfig(_idx_inicio, bg=_COLOR_ORIGEN, fg=_COLOR_NODO_TXT)
+    _lb_inicio.bind("<<ListboxSelect>>", _on_sel_inicio)
+
+    for m in (logica_interfaz.obtener_modulos() or []):
+        _lb_inicio.insert("end", m)
 
     tk.Label(panel_right, text="Destino",
              **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO,
                                     font=("Courier", 11, "bold"))).pack(anchor="w", pady=(0, 2))
-    _cb_destino = ttk.Combobox(panel_right, values=logica_interfaz.obtener_modulos(),
-                                state="readonly", width=24)
-    _cb_destino.pack(anchor="w", pady=(0, 14))
+
+    wrap_dst = tk.Frame(panel_right, bg=estilos.COLOR_FONDO)
+    wrap_dst.pack(fill="both", expand=True, pady=(0, 10))
+
+    sb_dst = tk.Scrollbar(wrap_dst, orient="vertical")
+    sb_dst.pack(side="right", fill="y")
+
+    _lb_destino = tk.Listbox(
+        wrap_dst,
+        yscrollcommand=sb_dst.set,
+        selectmode="single",
+        bg="#1A1A2E", fg=estilos.COLOR_TEXTO,
+        selectbackground=_COLOR_BLOQUEADO, selectforeground=_COLOR_NODO_TXT,
+        font=("Courier", 11), borderwidth=0, highlightthickness=1,
+        highlightcolor=estilos.COLOR_AZUL, activestyle="none",
+    )
+    _lb_destino.pack(side="left", fill="both", expand=True)
+    sb_dst.config(command=_lb_destino.yview)
+
+    def _on_sel_destino(event=None):
+        global _sel_destino, _idx_destino
+        sel = _lb_destino.curselection()
+        if sel:
+            if _idx_destino is not None:
+                _lb_destino.itemconfig(_idx_destino, bg="#1A1A2E", fg=estilos.COLOR_TEXTO)
+            _idx_destino = sel[0]
+            _sel_destino = _lb_destino.get(_idx_destino)
+            _lb_destino.itemconfig(_idx_destino, bg=_COLOR_BLOQUEADO, fg=_COLOR_NODO_TXT)
+    _lb_destino.bind("<<ListboxSelect>>", _on_sel_destino)
+
+    for m in (logica_interfaz.obtener_modulos() or []):
+        _lb_destino.insert("end", m)
 
     tk.Button(
         panel_right, text="Mostrar ruta", pady=10,
         command=_mostrar_ruta,
         **estilos.estilo_boton(),
-    ).pack(anchor="w", pady=(0, 8), fill="x")
+    ).pack(fill="x", pady=(0, 6))
 
     tk.Button(
         panel_right, text="VOLVER", pady=10,
         command=on_volver,
         **estilos.estilo_boton(color_fg=estilos.COLOR_TEXTO_OSCURO),
-    ).pack(anchor="w", fill="x")
+    ).pack(fill="x")
 
     return frame
 
@@ -310,14 +387,19 @@ def refrescar_ruta():
     """
     Entrada: Ninguna (usa variables globales y logica_interfaz).
     Salida: Ninguna.
-    Funcionamiento: Actualiza los combobox y limpia la lista de nodos.
+    Funcionamiento: Actualiza los listbox y limpia la lista de nodos.
     """
+    global _sel_inicio, _sel_destino, _idx_inicio, _idx_destino
     modulos = logica_interfaz.obtener_modulos() or []
     try:
-        _cb_inicio["values"]  = modulos
-        _cb_destino["values"] = modulos
-        _cb_inicio.set("")
-        _cb_destino.set("")
+        _sel_inicio  = None
+        _sel_destino = None
+        _idx_inicio  = None
+        _idx_destino = None
+        for lb in (_lb_inicio, _lb_destino):
+            lb.delete(0, "end")
+            for m in modulos:
+                lb.insert("end", m)
         for w in _lista_frame.winfo_children():
             w.destroy()
         tk.Label(
@@ -331,15 +413,14 @@ def refrescar_ruta():
     except Exception:
         pass
 
-
 def _mostrar_ruta():
     """
     Entrada: Ninguna (usa variables globales y logica_interfaz).
     Salida: Ninguna.
     Funcionamiento: Obtiene la ruta de logica_interfaz y la pasa a _poblar_lista_ruta().
     """
-    inicio  = _cb_inicio.get().strip()
-    destino = _cb_destino.get().strip()
+    inicio  = _sel_inicio  or ""
+    destino = _sel_destino or ""
     if not inicio or not destino:
         messagebox.showwarning("Ruta", "Selecciona inicio y destino.")
         return
