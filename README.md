@@ -107,15 +107,25 @@ Operacion-Atlas/
 
 ## Integrantes
 
-| Nombre |
-|---|
-| Tayler Wynta Rodríguez |
-| Maikel Flores Navarro | 
-| Luis Trejos Rivera | 
+| Nombre | carnet|
+|---|---|
+| Tayler Wynta Rodríguez | 2024143103 |
+| Maikel Flores Navarro | 2024148346 |
+| Luis Trejos Rivera | 2022437816 |
 
 ## Curso
-
 **Lenguajes de Programación - Código IC4700**  
+
 Instituto Tecnológico de Costa Rica  
-I Semestre 2026  
+
 Profesor: Ing. Allan Rodríguez Dávila
+
+I Semestre, 2026  
+
+Proyecto Programado 3 - Operacion Atlas 
+
+Fecha de entrega: 01/06/2026 
+
+Estatus de la entrega (debe ser CONGRUENTE con la solución entregada):
+Excelente
+
