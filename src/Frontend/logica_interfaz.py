@@ -3,7 +3,6 @@ from pathlib import Path
 from pyswip import Prolog
 
 
-# Referencias a frames
 frame_activo = None
 frame_menu = None
 frame_juego = None
@@ -17,10 +16,9 @@ frame_visitados = None
 frame_como_gano = None
 
 
-# Ruta
 archivo_logica = Path(__file__).resolve().parent.parent / "Backend" / "logica.pl"
-_prolog = Prolog()
-_prolog.consult(str(archivo_logica).replace("\\", "/"))
+motor_prolog = Prolog()
+motor_prolog.consult(str(archivo_logica).replace("\\", "/"))
 
 
 def obtener_prolog():
@@ -29,24 +27,25 @@ def obtener_prolog():
     Salida: Prolog.
     Funcionamiento: Retorna la instancia del motor Prolog utilizada por el módulo.
     """
-    return _prolog
+    return motor_prolog
 
 
-def consultar_uno(query):
+def consultar_uno(consulta):
     """
-    Entrada: query (str).
+    Entrada: consulta (str).
     Salida: dict o None.
     Funcionamiento: Ejecuta una consulta Prolog y retorna el primer resultado si existe.
     """
-    return next(obtener_prolog().query(query), None)
+    return next(obtener_prolog().query(consulta), None)
 
-def consultar_todos(query):
+
+def consultar_todos(consulta):
     """
-    Entrada: query (str).
+    Entrada: consulta (str).
     Salida: list[dict].
     Funcionamiento: Ejecuta una consulta Prolog y retorna todos los resultados.
     """
-    return list(obtener_prolog().query(query))
+    return list(obtener_prolog().query(consulta))
 
 
 def lista_a_texto(valor):
@@ -114,17 +113,17 @@ def obtener_tripulantes_objetivo_atrapados():
                     de victoria (condición objetivoT rescatado).
     """
     objetivos = set()
-    for r in consultar_todos("objetivoT(Tripulante, rescatado)"):
-        objetivos.add(str(r.get("Tripulante") or ""))
+    for resultado in consultar_todos("objetivoT(Tripulante, rescatado)"):
+        objetivos.add(str(resultado.get("Tripulante") or ""))
 
     tripulantes = []
-    for r in consultar_todos("tripulante(Tripulante, Modulo, Sistemas, atrapado)"):
-        nombre = str(r.get("Tripulante") or "")
+    for resultado in consultar_todos("tripulante(Tripulante, Modulo, Sistemas, atrapado)"):
+        nombre = str(resultado.get("Tripulante") or "")
         if nombre in objetivos:
             tripulantes.append({
                 "nombre": nombre,
-                "modulo": str(r.get("Modulo") or ""),
-                "sistemas_necesarios": lista_a_texto(r.get("Sistemas")),
+                "modulo": str(resultado.get("Modulo") or ""),
+                "sistemas_necesarios": lista_a_texto(resultado.get("Sistemas")),
             })
     return tripulantes
 
@@ -136,17 +135,17 @@ def obtener_sistemas_objetivo_en_falla():
                     de victoria (condición objetivoS restaurado).
     """
     objetivos = set()
-    for r in consultar_todos("objetivoS(Sistema, restaurado)"):
-        objetivos.add(str(r.get("Sistema") or ""))
+    for resultado in consultar_todos("objetivoS(Sistema, restaurado)"):
+        objetivos.add(str(resultado.get("Sistema") or ""))
 
     sistemas = []
-    for r in consultar_todos("sistema(Modulo, Sistema, Artefactos, fallo)"):
-        nombre = str(r.get("Sistema") or "")
+    for resultado in consultar_todos("sistema(Modulo, Sistema, Artefactos, fallo)"):
+        nombre = str(resultado.get("Sistema") or "")
         if nombre in objetivos:
             sistemas.append({
-                "modulo": str(r.get("Modulo") or ""),
+                "modulo": str(resultado.get("Modulo") or ""),
                 "sistema": nombre,
-                "artefactos": lista_a_texto(r.get("Artefactos")),
+                "artefactos": lista_a_texto(resultado.get("Artefactos")),
             })
     return sistemas
 
@@ -259,7 +258,6 @@ def ir_a_visitados():
         mostrar_frame(frame_visitados)
 
 
-# Acciones del juego
 
 def tomar(artefacto):
     """
@@ -555,14 +553,14 @@ def obtener_enlaces():
     """
     enlaces = []
     vistos = set()
-    for r in consultar_todos("enlace(A, B)"):
-        a = str(r.get("A") or "")
-        b = str(r.get("B") or "")
-        if a and b:
-            clave = tuple(sorted([a, b]))
+    for resultado in consultar_todos("enlace(A, B)"):
+        modulo_origen = str(resultado.get("A") or "")
+        modulo_destino = str(resultado.get("B") or "")
+        if modulo_origen and modulo_destino:
+            clave = tuple(sorted([modulo_origen, modulo_destino]))
             if clave not in vistos:
                 vistos.add(clave)
-                enlaces.append((a, b))
+                enlaces.append((modulo_origen, modulo_destino))
     return enlaces
 
 def como_gano():
@@ -601,29 +599,29 @@ def verifica_gane():
                     si se cumple, o False y None en caso contrario.
     """
     resultado = consultar_uno("verifica_gane")
-    
+
     if resultado is not None:
         # Victoria alcanzada - recopilar estado final
         artefactos_logrados = que_tengo()
         visitados = modulos_visitados()
-        
-        sistemas_rep = []
-        for resultado_sis in consultar_todos("sistemas_reparados(Lista), member(X, Lista)"):
-            sistema = str(resultado_sis.get("X") or "")
+
+        sistemas_reparados = []
+        for fila_sistema in consultar_todos("sistemas_reparados(Lista), member(X, Lista)"):
+            sistema = str(fila_sistema.get("X") or "")
             if sistema:
-                sistemas_rep.append(sistema)
-        
-        tripulantes_resc = []
-        for resultado_trip in consultar_todos("tripulantes_rescatados(Lista), member(X, Lista)"):
-            tripulante = str(resultado_trip.get("X") or "")
+                sistemas_reparados.append(sistema)
+
+        tripulantes_rescatados = []
+        for fila_tripulante in consultar_todos("tripulantes_rescatados(Lista), member(X, Lista)"):
+            tripulante = str(fila_tripulante.get("X") or "")
             if tripulante:
-                tripulantes_resc.append(tripulante)
-        
+                tripulantes_rescatados.append(tripulante)
+
         return True, {
             "artefactos": artefactos_logrados,
             "visitados": visitados,
-            "sistemas_reparados": sistemas_rep,
-            "tripulantes_rescatados": tripulantes_resc,
+            "sistemas_reparados": sistemas_reparados,
+            "tripulantes_rescatados": tripulantes_rescatados,
         }
     
     return False, None
@@ -649,12 +647,12 @@ def limpiar_string(valor):
     Salida: str limpio.
     Funcionamiento: Elimina el prefijo b'...' que Prolog retorna en strings con comillas.
     """
-    t = str(valor)
-    if t.startswith("b'") and t.endswith("'"):
-        return t[2:-1]
-    if t.startswith('b"') and t.endswith('"'):
-        return t[2:-1]
-    return t
+    texto_valor = str(valor)
+    if texto_valor.startswith("b'") and texto_valor.endswith("'"):
+        return texto_valor[2:-1]
+    if texto_valor.startswith('b"') and texto_valor.endswith('"'):
+        return texto_valor[2:-1]
+    return texto_valor
 
 
 def guardar_partida():

@@ -12,9 +12,9 @@ import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-_seleccion_tripulante_var  = None
-_lista_tripulantes_frame   = None
-_lista_sistemas_req_frame  = None
+seleccion_tripulante_var  = None
+lista_tripulantes_frame   = None
+lista_sistemas_req_frame  = None
 
 
 def construir(ventana, on_volver):
@@ -23,18 +23,17 @@ def construir(ventana, on_volver):
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna la interfaz de rescate de tripulantes.
     """
-    global _seleccion_tripulante_var, _lista_tripulantes_frame, _lista_sistemas_req_frame
+    global seleccion_tripulante_var, lista_tripulantes_frame, lista_sistemas_req_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
     frame.config(width=900, height=550)
     frame.pack_propagate(False)
 
-    _seleccion_tripulante_var = tk.StringVar(value="")
+    seleccion_tripulante_var = tk.StringVar(value="")
 
     contenedor = tk.Frame(frame, bg=estilos.COLOR_FONDO)
     contenedor.pack(fill="both", expand=True, padx=18, pady=16)
 
-    # Panel izquierdo: tripulantes atrapados en el modulo
     panel = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=430)
     panel.pack(side="left", fill="both", expand=True, padx=(0, 14))
     panel.pack_propagate(False)
@@ -44,10 +43,9 @@ def construir(ventana, on_volver):
         **estilos.estilo_label(fg=estilos.COLOR_BOTON_TEXTO, font=("Courier", 18, "bold")),
     ).pack(anchor="w", pady=(0, 10))
 
-    _lista_tripulantes_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
-    _lista_tripulantes_frame.pack(fill="both", expand=True)
+    lista_tripulantes_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
+    lista_tripulantes_frame.pack(fill="both", expand=True)
 
-    # Panel derecho: detalle y accion
     panel_det = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=300)
     panel_det.pack(side="left", fill="y")
     panel_det.pack_propagate(False)
@@ -58,7 +56,7 @@ def construir(ventana, on_volver):
     ).pack(anchor="w", pady=(0, 12))
 
     tk.Entry(
-        panel_det, textvariable=_seleccion_tripulante_var,
+        panel_det, textvariable=seleccion_tripulante_var,
         state="readonly", width=26, font=("Courier", 13),
         bg=estilos.COLOR_BOTON_FONDO, fg=estilos.COLOR_TEXTO,
         relief="flat", readonlybackground=estilos.COLOR_BOTON_FONDO, justify="center",
@@ -69,12 +67,12 @@ def construir(ventana, on_volver):
         **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "bold")),
     ).pack(anchor="w", pady=(8, 4))
 
-    _lista_sistemas_req_frame = tk.Frame(panel_det, bg=estilos.COLOR_FONDO)
-    _lista_sistemas_req_frame.pack(fill="both", expand=True)
+    lista_sistemas_req_frame = tk.Frame(panel_det, bg=estilos.COLOR_FONDO)
+    lista_sistemas_req_frame.pack(fill="both", expand=True)
 
     tk.Button(
         panel_det, text="RESCATAR", pady=12,
-        command=lambda: _ejecutar_rescate(on_volver),
+        command=lambda: ejecutar_rescate(on_volver),
         **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE),
     ).pack(anchor="w", pady=(0, 12))
 
@@ -93,16 +91,16 @@ def actualizar():
     Salida: Ninguna.
     Funcionamiento: Recarga la lista de tripulantes atrapados en el módulo actual.
     """
-    for w in _lista_tripulantes_frame.winfo_children():
-        w.destroy()
-    for w in _lista_sistemas_req_frame.winfo_children():
-        w.destroy()
-    _seleccion_tripulante_var.set("")
+    for widget in lista_tripulantes_frame.winfo_children():
+        widget.destroy()
+    for widget in lista_sistemas_req_frame.winfo_children():
+        widget.destroy()
+    seleccion_tripulante_var.set("")
 
     tripulantes = logica_interfaz.obtener_tripulantes_atrapados_modulo_actual()
     if not tripulantes:
         tk.Label(
-            _lista_tripulantes_frame,
+            lista_tripulantes_frame,
             text="No hay tripulantes atrapados en este modulo.",
             **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "italic")),
         ).pack(anchor="w", pady=6)
@@ -110,27 +108,27 @@ def actualizar():
 
     for tripulante in tripulantes:
         tk.Button(
-            _lista_tripulantes_frame, text=tripulante, pady=10,
-            command=lambda t=tripulante: _seleccionar_tripulante(t),
+            lista_tripulantes_frame, text=tripulante, pady=10,
+            command=lambda nombre=tripulante: seleccionar_tripulante(nombre),
             **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO),
         ).pack(anchor="w", pady=6)
 
 
-def _seleccionar_tripulante(tripulante):
+def seleccionar_tripulante(tripulante):
     """
     Entrada: tripulante (str).
     Salida: Ninguna.
     Funcionamiento: Muestra los sistemas requeridos para rescatar al tripulante seleccionado.
     """
-    _seleccion_tripulante_var.set(tripulante)
+    seleccion_tripulante_var.set(tripulante)
 
-    for w in _lista_sistemas_req_frame.winfo_children():
-        w.destroy()
+    for widget in lista_sistemas_req_frame.winfo_children():
+        widget.destroy()
 
     sistemas = logica_interfaz.obtener_sistemas_requeridos_tripulante(tripulante)
     if not sistemas:
         tk.Label(
-            _lista_sistemas_req_frame,
+            lista_sistemas_req_frame,
             text="No hay sistemas listados para este tripulante.",
             **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "italic")),
         ).pack(anchor="w", pady=6)
@@ -138,18 +136,18 @@ def _seleccionar_tripulante(tripulante):
 
     for sistema in sistemas:
         tk.Label(
-            _lista_sistemas_req_frame, text=sistema,
+            lista_sistemas_req_frame, text=sistema,
             **estilos.estilo_label(fg=estilos.COLOR_VERDE, font=("Courier", 12, "bold")),
         ).pack(anchor="w", pady=6)
 
 
-def _ejecutar_rescate(on_volver):
+def ejecutar_rescate(on_volver):
     """
     Entrada: on_volver (callable).
     Salida: Ninguna.
     Funcionamiento: Intenta rescatar al tripulante seleccionado y muestra el resultado.
     """
-    tripulante = _seleccion_tripulante_var.get().strip()
+    tripulante = seleccion_tripulante_var.get().strip()
     if not tripulante:
         messagebox.showwarning("Rescatar", "Selecciona primero un tripulante.")
         return

@@ -1,4 +1,3 @@
-# Colores de interfaz
 COLOR_FONDO       = "#0a0f1e"
 COLOR_TEXTO       = "#cde8ff"
 COLOR_TEXTO_OSCURO   = "#4a7090"
@@ -9,7 +8,6 @@ COLOR_VERDE   = "#4ddbaa"
 COLOR_AMARILLO= "#f0c040"
 COLOR_AZUL    = "#7aaeff"
 
-# Fuentes de letra
 TIPOGRAFIA    = ("Courier", 11)
 TIPOGRAFIA_GRANDE = ("Courier", 13, "bold")
 TIPOGRAFIA_EXTRALARGA = ("Courier", 36, "bold") 

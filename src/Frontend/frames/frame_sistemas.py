@@ -12,9 +12,9 @@ import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-_seleccion_sistema_var      = None
-_lista_sistemas_frame       = None
-_lista_artefactos_req_frame = None
+seleccion_sistema_var      = None
+lista_sistemas_frame       = None
+lista_artefactos_req_frame = None
 
 
 def construir(ventana, on_volver):
@@ -23,18 +23,17 @@ def construir(ventana, on_volver):
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna la interfaz de reparación de sistemas.
     """
-    global _seleccion_sistema_var, _lista_sistemas_frame, _lista_artefactos_req_frame
+    global seleccion_sistema_var, lista_sistemas_frame, lista_artefactos_req_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
     frame.config(width=900, height=550)
     frame.pack_propagate(False)
 
-    _seleccion_sistema_var = tk.StringVar(value="")
+    seleccion_sistema_var = tk.StringVar(value="")
 
     contenedor = tk.Frame(frame, bg=estilos.COLOR_FONDO)
     contenedor.pack(fill="both", expand=True, padx=18, pady=16)
 
-    # Panel izquierdo: sistemas en fallo
     panel = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=430)
     panel.pack(side="left", fill="both", expand=True, padx=(0, 14))
     panel.pack_propagate(False)
@@ -44,10 +43,9 @@ def construir(ventana, on_volver):
         **estilos.estilo_label(fg=estilos.COLOR_BOTON_TEXTO, font=("Courier", 18, "bold")),
     ).pack(anchor="w", pady=(0, 10))
 
-    _lista_sistemas_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
-    _lista_sistemas_frame.pack(fill="both", expand=True)
+    lista_sistemas_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
+    lista_sistemas_frame.pack(fill="both", expand=True)
 
-    # Panel derecho: detalle y acción
     panel_det = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=300)
     panel_det.pack(side="left", fill="y")
     panel_det.pack_propagate(False)
@@ -58,7 +56,7 @@ def construir(ventana, on_volver):
     ).pack(anchor="w", pady=(0, 12))
 
     tk.Entry(
-        panel_det, textvariable=_seleccion_sistema_var,
+        panel_det, textvariable=seleccion_sistema_var,
         state="readonly", width=26, font=("Courier", 13),
         bg=estilos.COLOR_BOTON_FONDO, fg=estilos.COLOR_TEXTO,
         relief="flat", readonlybackground=estilos.COLOR_BOTON_FONDO, justify="center",
@@ -69,12 +67,12 @@ def construir(ventana, on_volver):
         **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "bold")),
     ).pack(anchor="w", pady=(8, 4))
 
-    _lista_artefactos_req_frame = tk.Frame(panel_det, bg=estilos.COLOR_FONDO)
-    _lista_artefactos_req_frame.pack(fill="both", expand=True)
+    lista_artefactos_req_frame = tk.Frame(panel_det, bg=estilos.COLOR_FONDO)
+    lista_artefactos_req_frame.pack(fill="both", expand=True)
 
     tk.Button(
         panel_det, text="REPARAR", pady=12,
-        command=lambda: _ejecutar_reparacion(on_volver),
+        command=lambda: ejecutar_reparacion(on_volver),
         **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE),
     ).pack(anchor="w", pady=(0, 12))
 
@@ -93,63 +91,63 @@ def actualizar():
     Salida: Ninguna.
     Funcionamiento: Recarga la lista de sistemas en fallo del módulo actual.
     """
-    for w in _lista_sistemas_frame.winfo_children():
-        w.destroy()
-    for w in _lista_artefactos_req_frame.winfo_children():
-        w.destroy()
-    _seleccion_sistema_var.set("")
+    for widget in lista_sistemas_frame.winfo_children():
+        widget.destroy()
+    for widget in lista_artefactos_req_frame.winfo_children():
+        widget.destroy()
+    seleccion_sistema_var.set("")
 
     sistemas = logica_interfaz.obtener_sistemas_en_fallo()
     if not sistemas:
         tk.Label(
-            _lista_sistemas_frame,
+            lista_sistemas_frame,
             text="No hay sistemas a reparar en este módulo.",
             **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "italic")),
         ).pack(anchor="w", pady=6)
         return
 
-    for sys in sistemas:
+    for sistema in sistemas:
         tk.Button(
-            _lista_sistemas_frame, text=sys, pady=10,
-            command=lambda s=sys: _seleccionar_sistema(s),
+            lista_sistemas_frame, text=sistema, pady=10,
+            command=lambda nombre=sistema: seleccionar_sistema(nombre),
             **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO),
         ).pack(anchor="w", pady=6)
 
 
-def _seleccionar_sistema(sistema):
+def seleccionar_sistema(sistema):
     """
     Entrada: sistema (str).
     Salida: Ninguna.
     Funcionamiento: Muestra los artefactos requeridos para reparar el sistema seleccionado.
     """
-    _seleccion_sistema_var.set(sistema)
+    seleccion_sistema_var.set(sistema)
 
-    for w in _lista_artefactos_req_frame.winfo_children():
-        w.destroy()
+    for widget in lista_artefactos_req_frame.winfo_children():
+        widget.destroy()
 
     artefactos = logica_interfaz.obtener_artefactos_requeridos_sistema(sistema)
     if not artefactos:
         tk.Label(
-            _lista_artefactos_req_frame,
+            lista_artefactos_req_frame,
             text="No hay artefactos listados para este sistema.",
             **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "italic")),
         ).pack(anchor="w", pady=6)
         return
 
-    for a in artefactos:
+    for artefacto in artefactos:
         tk.Label(
-            _lista_artefactos_req_frame, text=a,
+            lista_artefactos_req_frame, text=artefacto,
             **estilos.estilo_label(fg=estilos.COLOR_VERDE, font=("Courier", 12, "bold")),
         ).pack(anchor="w", pady=6)
 
 
-def _ejecutar_reparacion(on_volver):
+def ejecutar_reparacion(on_volver):
     """
     Entrada: on_volver (callable).
     Salida: Ninguna.
     Funcionamiento: Intenta reparar el sistema seleccionado y muestra el resultado.
     """
-    sistema = _seleccion_sistema_var.get().strip()
+    sistema = seleccion_sistema_var.get().strip()
     if not sistema:
         messagebox.showwarning("Reparar", "Selecciona primero un sistema.")
         return

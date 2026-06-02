@@ -11,10 +11,10 @@ import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-_frame_contenedor = None
-_texto            = None
-_boton_volver     = None
-_callback_volver  = None
+frame_contenedor = None
+texto_widget     = None
+boton_volver     = None
+callback_volver  = None
 
 
 def construir(ventana, on_volver=None):
@@ -23,16 +23,15 @@ def construir(ventana, on_volver=None):
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna el frame de la pantalla "Cómo gano".
     """
-    global _frame_contenedor, _texto, _boton_volver, _callback_volver
+    global frame_contenedor, texto_widget, boton_volver, callback_volver
 
-    _callback_volver  = on_volver
+    callback_volver  = on_volver
 
-    _frame_contenedor = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
-    _frame_contenedor.config(width=900, height=550)
-    _frame_contenedor.pack_propagate(False)
+    frame_contenedor = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
+    frame_contenedor.config(width=900, height=550)
+    frame_contenedor.pack_propagate(False)
 
-    # ===== Cabecera =====
-    cabecera = tk.Frame(_frame_contenedor, bg=estilos.COLOR_FONDO)
+    cabecera = tk.Frame(frame_contenedor, bg=estilos.COLOR_FONDO)
     cabecera.pack(fill="x", padx=25, pady=(18, 0))
 
     tk.Label(
@@ -51,14 +50,13 @@ def construir(ventana, on_volver=None):
         **estilos.estilo_boton(color_fg=estilos.COLOR_BOTON_TEXTO),
     ).pack(side="right")
 
-    # ===== Área scrollable =====
-    contenedor_scroll = tk.Frame(_frame_contenedor, bg=estilos.COLOR_FONDO)
+    contenedor_scroll = tk.Frame(frame_contenedor, bg=estilos.COLOR_FONDO)
     contenedor_scroll.pack(fill="both", expand=True, padx=25, pady=(10, 0))
 
     scrollbar = tk.Scrollbar(contenedor_scroll)
     scrollbar.pack(side="right", fill="y")
 
-    _texto = tk.Text(
+    texto_widget = tk.Text(
         contenedor_scroll,
         bg=estilos.COLOR_FONDO,
         fg=estilos.COLOR_TEXTO,
@@ -72,30 +70,28 @@ def construir(ventana, on_volver=None):
         pady=10,
         yscrollcommand=scrollbar.set,
     )
-    scrollbar.config(command=_texto.yview)
+    scrollbar.config(command=texto_widget.yview)
 
-    # Tags de estilo
-    estilos.configurar_tags_victoria(_texto)
-    _texto.tag_config("ruta",      foreground=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 10))
-    _texto.tag_config("ruta_nodo", foreground=estilos.COLOR_AZUL,         font=("Courier", 10, "bold"))
-    _texto.tag_config("azul",      foreground=estilos.COLOR_AZUL,         font=("Courier", 10, "bold"))
-    _texto.tag_config("verde",     foreground=estilos.COLOR_VERDE,        font=("Courier", 10, "bold"))
-    _texto.tag_config("amarillo",  foreground=estilos.COLOR_AMARILLO,     font=("Courier", 10, "bold"))
-    _texto.tag_config("rojo",      foreground=estilos.COLOR_ROJO,         font=("Courier", 10, "bold"))
+    estilos.configurar_tags_victoria(texto_widget)
+    texto_widget.tag_config("ruta",      foreground=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 10))
+    texto_widget.tag_config("ruta_nodo", foreground=estilos.COLOR_AZUL,         font=("Courier", 10, "bold"))
+    texto_widget.tag_config("azul",      foreground=estilos.COLOR_AZUL,         font=("Courier", 10, "bold"))
+    texto_widget.tag_config("verde",     foreground=estilos.COLOR_VERDE,        font=("Courier", 10, "bold"))
+    texto_widget.tag_config("amarillo",  foreground=estilos.COLOR_AMARILLO,     font=("Courier", 10, "bold"))
+    texto_widget.tag_config("rojo",      foreground=estilos.COLOR_ROJO,         font=("Courier", 10, "bold"))
 
-    _texto.pack(side="left", fill="both", expand=True)
+    texto_widget.pack(side="left", fill="both", expand=True)
 
-    # ===== Botón volver =======
-    _boton_volver = tk.Button(
-        _frame_contenedor,
+    boton_volver = tk.Button(
+        frame_contenedor,
         text="Volver al Juego",
         pady=12,
         command=_volver,
         **estilos.estilo_boton(color_fg=estilos.COLOR_TEXTO_OSCURO),
     )
-    _boton_volver.pack(pady=(8, 14))
+    boton_volver.pack(pady=(8, 14))
 
-    return _frame_contenedor
+    return frame_contenedor
 
 
 def actualizar():
@@ -105,31 +101,29 @@ def actualizar():
     Funcionamiento: Refresca el contenido mostrando hasta 10 planes paso a paso
                     para ganar, obtenidos desde logica_interfaz.como_gano().
     """
-    if _texto is None:
+    if texto_widget is None:
         return
 
-    _texto.config(state="normal")
-    _texto.delete("1.0", "end")
+    texto_widget.config(state="normal")
+    texto_widget.delete("1.0", "end")
 
     planes = logica_interfaz.como_gano()
 
     SEP = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
 
-    # Sin planes — ya gano
     if not planes:
-        _texto.insert("end", f"\n{SEP}", "separador")
-        _texto.insert("end", "Ya cumpliste todas las condiciones!\n", "victoria")
-        _texto.insert("end", f"{SEP}\n", "separador")
-        _texto.insert("end", "Usa el boton Victoria para confirmar.\n", "item")
-        _texto.config(state="disabled")
-        _texto.yview_moveto(0)
+        texto_widget.insert("end", f"\n{SEP}", "separador")
+        texto_widget.insert("end", "Ya cumpliste todas las condiciones!\n", "victoria")
+        texto_widget.insert("end", f"{SEP}\n", "separador")
+        texto_widget.insert("end", "Usa el boton Victoria para confirmar.\n", "item")
+        texto_widget.config(state="disabled")
+        texto_widget.yview_moveto(0)
         return
 
-    _texto.insert("end", f"\n{SEP}", "separador")
-    _texto.insert("end", "PLAN PARA GANAR\n", "pendiente")
-    _texto.insert("end", f"{SEP}\n", "separador")
+    texto_widget.insert("end", f"\n{SEP}", "separador")
+    texto_widget.insert("end", "PLAN PARA GANAR\n", "pendiente")
+    texto_widget.insert("end", f"{SEP}\n", "separador")
 
-    # Etiquetas de accion para mostrar en pantalla
     etiquetas = {
         "ir":       ("Ir a",       "COLOR_AZUL"),
         "tomar":    ("Tomar",      "COLOR_VERDE"),
@@ -138,22 +132,22 @@ def actualizar():
         "rescatar": ("Rescatar",   "COLOR_VERDE"),
     }
 
-    for i, plan in enumerate(planes, start=1):
-        _texto.insert("end", f"SOLUCION {i}\n", "seccion")
-        _texto.insert("end", "\n", "item")
+    for numero_plan, plan in enumerate(planes, start=1):
+        texto_widget.insert("end", f"SOLUCION {numero_plan}\n", "seccion")
+        texto_widget.insert("end", "\n", "item")
 
         for num, paso in enumerate(plan, start=1):
             accion    = paso.get("accion", "")
             argumento = paso.get("argumento", "")
             etiqueta, color_key = etiquetas.get(accion, (accion, "item"))
             linea = f"  {num:>2}. {etiqueta} {argumento}\n"
-            _texto.insert("end", linea, color_key.lower().replace("color_", ""))
+            texto_widget.insert("end", linea, color_key.lower().replace("color_", ""))
 
-        _texto.insert("end", "      --- VICTORIA ---\n", "victoria")
-        _texto.insert("end", f"\n{SEP}\n", "separador")
+        texto_widget.insert("end", "      --- VICTORIA ---\n", "victoria")
+        texto_widget.insert("end", f"\n{SEP}\n", "separador")
 
-    _texto.config(state="disabled")
-    _texto.yview_moveto(0)
+    texto_widget.config(state="disabled")
+    texto_widget.yview_moveto(0)
 
 
 def _volver():
@@ -162,5 +156,5 @@ def _volver():
     Salida: Ninguna.
     Funcionamiento: Ejecuta el callback de volver si está definido.
     """
-    if _callback_volver:
-        _callback_volver()
+    if callback_volver:
+        callback_volver()

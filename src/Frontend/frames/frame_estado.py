@@ -34,7 +34,6 @@ def construir(frame_juego):
         cursor="arrow",
     )
 
-    # Tags de color semantico
     texto_estado.tag_config("titulo",        foreground=estilos.COLOR_BOTON_TEXTO,        font=("Courier", 13, "bold"))
     texto_estado.tag_config("seccion",       foreground=estilos.COLOR_AZUL,    font=("Courier", 11, "bold"))
     texto_estado.tag_config("ubicacion",     foreground=estilos.COLOR_AMARILLO, font=("Courier", 12, "bold"))
@@ -64,51 +63,45 @@ def actualizar(texto_estado):
 
     estado = logica_interfaz.obtener_estado_jugador()
 
-    # Cabecera
     texto_estado.insert("end", "━━━━━━━━━━━━━━━━━━━\n", "separador")
     texto_estado.insert("end", "           ESTADO             \n", "titulo")
     texto_estado.insert("end", "━━━━━━━━━━━━━━━━━━━\n", "separador")
     texto_estado.insert("end", "\n", "")
 
-    # Ubicacion
     texto_estado.insert("end", "» UBICACION\n", "seccion")
     texto_estado.insert("end", f"   {estado['ubicacion']}\n", "ubicacion")
     texto_estado.insert("end", f"   {estado['descripcion_modulo'][:60]}...\n\n", "item")
 
-    # Artefactos en inventario
     texto_estado.insert("end", "» ARTEFACTOS\n", "seccion")
     if estado["artefactos"]:
-        for a in estado["artefactos"]:
-            texto_estado.insert("end", f"   + {a}\n", "item")
+        for artefacto in estado["artefactos"]:
+            texto_estado.insert("end", f"   + {artefacto}\n", "item")
     else:
         texto_estado.insert("end", "   (ninguno)\n", "vacio")
     texto_estado.insert("end", "\n", "")
 
-    # Artefactos usados
     texto_estado.insert("end", "» USADOS\n", "seccion")
     if estado["artefactos_usados"]:
-        for u in estado["artefactos_usados"]:
-            texto_estado.insert("end", f"   - {u}\n", "item")
+        for artefacto_usado in estado["artefactos_usados"]:
+            texto_estado.insert("end", f"   - {artefacto_usado}\n", "item")
     else:
         texto_estado.insert("end", "   (ninguno)\n", "vacio")
     texto_estado.insert("end", "\n", "")
 
-    # Sistemas en falla
     texto_estado.insert("end", "» SISTEMAS EN FALLA\n", "seccion")
     if estado["sistemas_en_falla"]:
-        for s in estado["sistemas_en_falla"]:
-            texto_estado.insert("end", f"   [!] {s['sistema']}\n", "sistema_fallo")
-            texto_estado.insert("end", f"       ({s['modulo']})\n", "item")
+        for sistema in estado["sistemas_en_falla"]:
+            texto_estado.insert("end", f"   [!] {sistema["sistema"]}\n", "sistema_fallo")
+            texto_estado.insert("end", f"       ({sistema["modulo"]})\n", "item")
     else:
         texto_estado.insert("end", "   (ninguno)\n", "vacio")
     texto_estado.insert("end", "\n", "")
 
-    # Tripulantes atrapados
     texto_estado.insert("end", "» TRIPULANTES\n", "seccion")
     if estado["tripulantes_atrapados"]:
-        for t in estado["tripulantes_atrapados"]:
-            texto_estado.insert("end", f"   [x] {t['nombre']}\n", "tripulante")
-            texto_estado.insert("end", f"       ({t['modulo']})\n", "item")
+        for tripulante in estado["tripulantes_atrapados"]:
+            texto_estado.insert("end", f"   [x] {tripulante["nombre"]}\n", "tripulante")
+            texto_estado.insert("end", f"       ({tripulante["modulo"]})\n", "item")
     else:
         texto_estado.insert("end", "   (todos rescatados)\n", "vacio")
 

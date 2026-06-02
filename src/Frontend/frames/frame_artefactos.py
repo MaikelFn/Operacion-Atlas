@@ -13,13 +13,11 @@ import estilos as estilos
 import logica_interfaz as logica_interfaz
 
 
-# ==============================================
 # TOMAR ARTEFACTO
-# ==============================================
 
-_tomar_seleccion_var  = None
-_tomar_origen_var     = None
-_tomar_lista_frame    = None
+tomar_seleccion_var  = None
+tomar_origen_var     = None
+tomar_lista_frame    = None
 
 
 def construir_tomar(ventana, on_volver):
@@ -28,14 +26,14 @@ def construir_tomar(ventana, on_volver):
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna la interfaz de toma de artefactos.
     """
-    global _tomar_seleccion_var, _tomar_origen_var, _tomar_lista_frame
+    global tomar_seleccion_var, tomar_origen_var, tomar_lista_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
     frame.config(width=900, height=550)
     frame.pack_propagate(False)
 
-    _tomar_seleccion_var = tk.StringVar(value="")
-    _tomar_origen_var    = tk.StringVar(value="")
+    tomar_seleccion_var = tk.StringVar(value="")
+    tomar_origen_var    = tk.StringVar(value="")
 
     contenedor = tk.Frame(frame, bg=estilos.COLOR_FONDO)
     contenedor.pack(fill="both", expand=True, padx=18, pady=16)
@@ -47,12 +45,12 @@ def construir_tomar(ventana, on_volver):
     tk.Label(panel, text="ARTEFACTOS DISPONIBLES",
              **estilos.estilo_label(fg=estilos.COLOR_BOTON_TEXTO, font=("Courier", 18, "bold"))
              ).pack(anchor="w", pady=(0, 10))
-    tk.Label(panel, textvariable=_tomar_origen_var,
+    tk.Label(panel, textvariable=tomar_origen_var,
              **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "bold"))
              ).pack(anchor="w", pady=(0, 10))
 
-    _tomar_lista_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
-    _tomar_lista_frame.pack(fill="both", expand=True)
+    tomar_lista_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
+    tomar_lista_frame.pack(fill="both", expand=True)
 
     panel_conf = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=300)
     panel_conf.pack(side="left", fill="y")
@@ -61,13 +59,13 @@ def construir_tomar(ventana, on_volver):
     tk.Label(panel_conf, text="SELECCION",
              **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold"))
              ).pack(anchor="w", pady=(0, 12))
-    tk.Entry(panel_conf, textvariable=_tomar_seleccion_var,
+    tk.Entry(panel_conf, textvariable=tomar_seleccion_var,
              state="readonly", width=26, font=("Courier", 13),
              bg=estilos.COLOR_BOTON_FONDO, fg=estilos.COLOR_TEXTO, relief="flat",
              readonlybackground=estilos.COLOR_BOTON_FONDO, justify="center"
              ).pack(anchor="w", pady=(0, 16))
     tk.Button(panel_conf, text="TOMAR", pady=12,
-              command=lambda: _ejecutar_tomar(on_volver),
+              command=lambda: ejecutar_tomar(on_volver),
               **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)
               ).pack(anchor="w", pady=(0, 12))
     tk.Button(panel_conf, text="VOLVER AL JUEGO", pady=12,
@@ -84,33 +82,33 @@ def actualizar_tomar():
     Salida: Ninguna.
     Funcionamiento: Refresca la lista de artefactos disponibles en el módulo actual.
     """
-    for w in _tomar_lista_frame.winfo_children():
-        w.destroy()
-    _tomar_seleccion_var.set("")
+    for widget in tomar_lista_frame.winfo_children():
+        widget.destroy()
+    tomar_seleccion_var.set("")
 
     estado = logica_interfaz.obtener_estado_jugador()
-    _tomar_origen_var.set(f"En: {estado['ubicacion']}")
+    tomar_origen_var.set(f"En: {estado['ubicacion']}")
 
     artefactos = logica_interfaz.obtener_artefactos_disponibles()
     if not artefactos:
-        tk.Label(_tomar_lista_frame, text="No hay artefactos disponibles.",
+        tk.Label(tomar_lista_frame, text="No hay artefactos disponibles.",
                  **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "italic"))
                  ).pack(anchor="w", pady=6)
         return
-    for a in artefactos:
-        tk.Button(_tomar_lista_frame, text=a, pady=10,
-                  command=lambda x=a: _tomar_seleccion_var.set(x),
+    for artefacto in artefactos:
+        tk.Button(tomar_lista_frame, text=artefacto, pady=10,
+                  command=lambda nombre=artefacto: tomar_seleccion_var.set(nombre),
                   **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)
                   ).pack(anchor="w", pady=6)
 
 
-def _ejecutar_tomar(on_volver):
+def ejecutar_tomar(on_volver):
     """
     Entrada: on_volver (callable).
     Salida: Ninguna.
     Funcionamiento: Intenta tomar el artefacto seleccionado y muestra el resultado.
     """
-    artefacto = _tomar_seleccion_var.get().strip()
+    artefacto = tomar_seleccion_var.get().strip()
     if not artefacto:
         messagebox.showwarning("Tomar", "Primero selecciona un artefacto.")
         return
@@ -121,13 +119,11 @@ def _ejecutar_tomar(on_volver):
         messagebox.showerror("Tomar", f"No se pudo tomar {artefacto}.")
 
 
-# ==============================================
 # USAR ARTEFACTO
-# ==============================================
 
-_usar_seleccion_var = None
-_usar_origen_var    = None
-_usar_lista_frame   = None
+usar_seleccion_var = None
+usar_origen_var    = None
+usar_lista_frame   = None
 
 
 def construir_usar(ventana, on_volver):
@@ -136,14 +132,14 @@ def construir_usar(ventana, on_volver):
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna la interfaz para usar artefactos.
     """
-    global _usar_seleccion_var, _usar_origen_var, _usar_lista_frame
+    global usar_seleccion_var, usar_origen_var, usar_lista_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
     frame.config(width=900, height=550)
     frame.pack_propagate(False)
 
-    _usar_seleccion_var = tk.StringVar(value="")
-    _usar_origen_var    = tk.StringVar(value="")
+    usar_seleccion_var = tk.StringVar(value="")
+    usar_origen_var    = tk.StringVar(value="")
 
     contenedor = tk.Frame(frame, bg=estilos.COLOR_FONDO)
     contenedor.pack(fill="both", expand=True, padx=18, pady=16)
@@ -155,12 +151,12 @@ def construir_usar(ventana, on_volver):
     tk.Label(panel, text="ARTEFACTOS DEL INVENTARIO",
              **estilos.estilo_label(fg=estilos.COLOR_BOTON_TEXTO, font=("Courier", 18, "bold"))
              ).pack(anchor="w", pady=(0, 10))
-    tk.Label(panel, textvariable=_usar_origen_var,
+    tk.Label(panel, textvariable=usar_origen_var,
              **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "bold"))
              ).pack(anchor="w", pady=(0, 10))
 
-    _usar_lista_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
-    _usar_lista_frame.pack(fill="both", expand=True)
+    usar_lista_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
+    usar_lista_frame.pack(fill="both", expand=True)
 
     panel_conf = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=300)
     panel_conf.pack(side="left", fill="y")
@@ -169,13 +165,13 @@ def construir_usar(ventana, on_volver):
     tk.Label(panel_conf, text="SELECCION",
              **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold"))
              ).pack(anchor="w", pady=(0, 12))
-    tk.Entry(panel_conf, textvariable=_usar_seleccion_var,
+    tk.Entry(panel_conf, textvariable=usar_seleccion_var,
              state="readonly", width=26, font=("Courier", 13),
              bg=estilos.COLOR_BOTON_FONDO, fg=estilos.COLOR_TEXTO, relief="flat",
              readonlybackground=estilos.COLOR_BOTON_FONDO, justify="center"
              ).pack(anchor="w", pady=(0, 16))
     tk.Button(panel_conf, text="USAR", pady=12,
-              command=lambda: _ejecutar_usar(on_volver),
+              command=lambda: ejecutar_usar(on_volver),
               **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)
               ).pack(anchor="w", pady=(0, 12))
     tk.Button(panel_conf, text="VOLVER AL JUEGO", pady=12,
@@ -192,33 +188,33 @@ def actualizar_usar():
     Salida: Ninguna.
     Funcionamiento: Refresca la lista de artefactos usables del inventario.
     """
-    for w in _usar_lista_frame.winfo_children():
-        w.destroy()
-    _usar_seleccion_var.set("")
+    for widget in usar_lista_frame.winfo_children():
+        widget.destroy()
+    usar_seleccion_var.set("")
 
     estado = logica_interfaz.obtener_estado_jugador()
-    _usar_origen_var.set(f"Inventario de: {estado['ubicacion']}")
+    usar_origen_var.set(f"Inventario de: {estado['ubicacion']}")
 
     artefactos = logica_interfaz.obtener_artefactos_usables()
     if not artefactos:
-        tk.Label(_usar_lista_frame, text="No hay artefactos usables.",
+        tk.Label(usar_lista_frame, text="No hay artefactos usables.",
                  **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "italic"))
                  ).pack(anchor="w", pady=6)
         return
-    for a in artefactos:
-        tk.Button(_usar_lista_frame, text=a, pady=10,
-                  command=lambda x=a: _usar_seleccion_var.set(x),
+    for artefacto in artefactos:
+        tk.Button(usar_lista_frame, text=artefacto, pady=10,
+                  command=lambda nombre=artefacto: usar_seleccion_var.set(nombre),
                   **estilos.estilo_boton(color_fg=estilos.COLOR_AMARILLO)
                   ).pack(anchor="w", pady=6)
 
 
-def _ejecutar_usar(on_volver):
+def ejecutar_usar(on_volver):
     """
     Entrada: on_volver (callable).
     Salida: Ninguna.
     Funcionamiento: Intenta usar el artefacto seleccionado y muestra el resultado.
     """
-    artefacto = _usar_seleccion_var.get().strip()
+    artefacto = usar_seleccion_var.get().strip()
     if not artefacto:
         messagebox.showwarning("Usar", "Primero selecciona un artefacto.")
         return
@@ -229,13 +225,11 @@ def _ejecutar_usar(on_volver):
         messagebox.showerror("Usar", f"No se pudo usar {artefacto}.")
 
 
-# ==============================================
 # DONDE ESTÁ EL ARTEFACTO
-# ==============================================
 
-_donde_seleccion_var = None
-_donde_ubicacion_var = None
-_donde_lista_frame   = None
+donde_seleccion_var = None
+donde_ubicacion_var = None
+donde_lista_frame   = None
 
 
 def construir_donde(ventana, on_volver):
@@ -244,14 +238,14 @@ def construir_donde(ventana, on_volver):
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna la interfaz para consultar ubicación de artefactos.
     """
-    global _donde_seleccion_var, _donde_ubicacion_var, _donde_lista_frame
+    global donde_seleccion_var, donde_ubicacion_var, donde_lista_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
     frame.config(width=900, height=550)
     frame.pack_propagate(False)
 
-    _donde_seleccion_var = tk.StringVar(value="")
-    _donde_ubicacion_var = tk.StringVar(value="")
+    donde_seleccion_var = tk.StringVar(value="")
+    donde_ubicacion_var = tk.StringVar(value="")
 
     contenedor = tk.Frame(frame, bg=estilos.COLOR_FONDO)
     contenedor.pack(fill="both", expand=True, padx=18, pady=16)
@@ -264,8 +258,8 @@ def construir_donde(ventana, on_volver):
              **estilos.estilo_label(fg=estilos.COLOR_BOTON_TEXTO, font=("Courier", 18, "bold"))
              ).pack(anchor="w", pady=(0, 10))
 
-    _donde_lista_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
-    _donde_lista_frame.pack(fill="both", expand=True)
+    donde_lista_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
+    donde_lista_frame.pack(fill="both", expand=True)
 
     panel_res = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=300)
     panel_res.pack(side="left", fill="y")
@@ -274,12 +268,12 @@ def construir_donde(ventana, on_volver):
     tk.Label(panel_res, text="SELECCION",
              **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold"))
              ).pack(anchor="w", pady=(0, 12))
-    tk.Entry(panel_res, textvariable=_donde_seleccion_var,
+    tk.Entry(panel_res, textvariable=donde_seleccion_var,
              state="readonly", width=26, font=("Courier", 13),
              bg=estilos.COLOR_BOTON_FONDO, fg=estilos.COLOR_TEXTO, relief="flat",
              readonlybackground=estilos.COLOR_BOTON_FONDO, justify="center"
              ).pack(anchor="w", pady=(0, 16))
-    tk.Label(panel_res, textvariable=_donde_ubicacion_var,
+    tk.Label(panel_res, textvariable=donde_ubicacion_var,
              wraplength=260, justify="left",
              **estilos.estilo_label(fg=estilos.COLOR_TEXTO, font=("Courier", 12, "bold"))
              ).pack(anchor="w", pady=(0, 16))
@@ -297,42 +291,40 @@ def actualizar_donde():
     Salida: Ninguna.
     Funcionamiento: Refresca la lista de artefactos fuera del inventario.
     """
-    for w in _donde_lista_frame.winfo_children():
-        w.destroy()
-    _donde_seleccion_var.set("")
-    _donde_ubicacion_var.set("")
+    for widget in donde_lista_frame.winfo_children():
+        widget.destroy()
+    donde_seleccion_var.set("")
+    donde_ubicacion_var.set("")
 
     artefactos = logica_interfaz.obtener_artefactos_faltantes()
     if not artefactos:
-        tk.Label(_donde_lista_frame, text="No hay artefactos fuera del inventario.",
+        tk.Label(donde_lista_frame, text="No hay artefactos fuera del inventario.",
                  **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "italic"))
                  ).pack(anchor="w", pady=6)
         return
-    for a in artefactos:
-        tk.Button(_donde_lista_frame, text=a, pady=10,
-                  command=lambda x=a: _seleccionar_donde(x),
+    for artefacto in artefactos:
+        tk.Button(donde_lista_frame, text=artefacto, pady=10,
+                  command=lambda nombre=artefacto: seleccionar_donde(nombre),
                   **estilos.estilo_boton(color_fg=estilos.COLOR_AZUL)
                   ).pack(anchor="w", pady=6)
 
 
-def _seleccionar_donde(artefacto):
+def seleccionar_donde(artefacto):
     """
     Entrada: artefacto (str).
     Salida: Ninguna.
     Funcionamiento: Muestra el módulo donde se encuentra el artefacto seleccionado.
     """
-    _donde_seleccion_var.set(artefacto)
+    donde_seleccion_var.set(artefacto)
     modulo = logica_interfaz.donde_esta(artefacto)
-    _donde_ubicacion_var.set(f"Se encuentra en: {modulo}")
+    donde_ubicacion_var.set(f"Se encuentra en: {modulo}")
 
 
-# ==============================================
 # INVENTARIO
-# ==============================================
 
-_inv_seleccion_var = None
-_inv_detalle_var   = None
-_inv_lista_frame   = None
+inv_seleccion_var = None
+inv_detalle_var   = None
+inv_lista_frame   = None
 
 
 def construir_inventario(ventana, on_volver):
@@ -341,14 +333,14 @@ def construir_inventario(ventana, on_volver):
     Salida: frame (tk.Frame).
     Funcionamiento: Construye y retorna la interfaz del inventario del jugador.
     """
-    global _inv_seleccion_var, _inv_detalle_var, _inv_lista_frame
+    global inv_seleccion_var, inv_detalle_var, inv_lista_frame
 
     frame = tk.Frame(ventana, bg=estilos.COLOR_FONDO)
     frame.config(width=900, height=550)
     frame.pack_propagate(False)
 
-    _inv_seleccion_var = tk.StringVar(value="")
-    _inv_detalle_var   = tk.StringVar(value="")
+    inv_seleccion_var = tk.StringVar(value="")
+    inv_detalle_var   = tk.StringVar(value="")
 
     contenedor = tk.Frame(frame, bg=estilos.COLOR_FONDO)
     contenedor.pack(fill="both", expand=True, padx=18, pady=16)
@@ -361,8 +353,8 @@ def construir_inventario(ventana, on_volver):
              **estilos.estilo_label(fg=estilos.COLOR_BOTON_TEXTO, font=("Courier", 18, "bold"))
              ).pack(anchor="w", pady=(0, 10))
 
-    _inv_lista_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
-    _inv_lista_frame.pack(fill="both", expand=True)
+    inv_lista_frame = tk.Frame(panel, bg=estilos.COLOR_FONDO)
+    inv_lista_frame.pack(fill="both", expand=True)
 
     panel_det = tk.Frame(contenedor, bg=estilos.COLOR_FONDO, width=300)
     panel_det.pack(side="left", fill="y")
@@ -371,12 +363,12 @@ def construir_inventario(ventana, on_volver):
     tk.Label(panel_det, text="SELECCION",
              **estilos.estilo_label(fg=estilos.COLOR_AMARILLO, font=("Courier", 15, "bold"))
              ).pack(anchor="w", pady=(0, 12))
-    tk.Entry(panel_det, textvariable=_inv_seleccion_var,
+    tk.Entry(panel_det, textvariable=inv_seleccion_var,
              state="readonly", width=26, font=("Courier", 13),
              bg=estilos.COLOR_BOTON_FONDO, fg=estilos.COLOR_TEXTO, relief="flat",
              readonlybackground=estilos.COLOR_BOTON_FONDO, justify="center"
              ).pack(anchor="w", pady=(0, 16))
-    tk.Label(panel_det, textvariable=_inv_detalle_var,
+    tk.Label(panel_det, textvariable=inv_detalle_var,
              wraplength=260, justify="left",
              **estilos.estilo_label(fg=estilos.COLOR_TEXTO, font=("Courier", 12, "bold"))
              ).pack(anchor="w", pady=(0, 16))
@@ -394,33 +386,33 @@ def actualizar_inventario():
     Salida: Ninguna.
     Funcionamiento: Refresca la lista de artefactos en el inventario.
     """
-    for w in _inv_lista_frame.winfo_children():
-        w.destroy()
-    _inv_seleccion_var.set("")
-    _inv_detalle_var.set("")
+    for widget in inv_lista_frame.winfo_children():
+        widget.destroy()
+    inv_seleccion_var.set("")
+    inv_detalle_var.set("")
 
     inventario = logica_interfaz.obtener_inventario_artefactos()
     if not inventario:
-        tk.Label(_inv_lista_frame, text="El jugador no tiene artefactos.",
+        tk.Label(inv_lista_frame, text="El jugador no tiene artefactos.",
                  **estilos.estilo_label(fg=estilos.COLOR_TEXTO_OSCURO, font=("Courier", 11, "italic"))
                  ).pack(anchor="w", pady=6)
         return
-    for item in inventario:
-        etiqueta = item["artefacto"]
-        if item["usado"]:
+    for entrada in inventario:
+        etiqueta = entrada["artefacto"]
+        if entrada["usado"]:
             etiqueta = f"{etiqueta}\n[USADO]"
-        tk.Button(_inv_lista_frame, text=etiqueta, pady=10,
-                  command=lambda i=item: _seleccionar_inventario(i),
+        tk.Button(inv_lista_frame, text=etiqueta, pady=10,
+                  command=lambda datos=entrada: seleccionar_inventario(datos),
                   **estilos.estilo_boton(color_fg=estilos.COLOR_VERDE)
                   ).pack(anchor="w", pady=6)
 
 
-def _seleccionar_inventario(item):
+def seleccionar_inventario(datos):
     """
-    Entrada: item (dict con claves "artefacto", "usado", "modulo").
+    Entrada: datos (dict con claves "artefacto", "usado", "modulo").
     Salida: Ninguna.
     Funcionamiento: Muestra los detalles del artefacto seleccionado del inventario.
     """
-    _inv_seleccion_var.set(item["artefacto"])
-    usado_texto = "Sí" if item["usado"] else "No"
-    _inv_detalle_var.set(f"Usado: {usado_texto}\nObtenido en: {item['modulo']}")
+    inv_seleccion_var.set(datos["artefacto"])
+    usado_texto = "Sí" if datos["usado"] else "No"
+    inv_detalle_var.set(f"Usado: {usado_texto}\nObtenido en: {datos['modulo']}")

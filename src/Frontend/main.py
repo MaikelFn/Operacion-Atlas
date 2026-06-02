@@ -62,14 +62,11 @@ frame_como_gano  = modulo_frame_como_gano.construir(ventana, on_volver=lambda: a
 frame_juego.config(width=1200, height=700)
 frame_juego.pack_propagate(False)
 
-# Panel izquierdo de estado (dentro del frame de juego)
 texto_estado = modulo_frame_estado.construir(frame_juego)
 
-# Panel central del mapa (dentro del frame de juego)
 panel_mapa = modulo_frame_mapa.construir(frame_juego)
 panel_mapa.pack(side="left", fill="y", padx=(0, 0), pady=14)
 
-# Panel derecho de acciones (dentro del frame de juego)
 modulo_frame_juego.construir(frame_juego, callbacks={
     "mover":      lambda: abrir_pantalla_mover(),
     "ruta":       lambda: abrir_pantalla_ruta(),
@@ -86,13 +83,8 @@ modulo_frame_juego.construir(frame_juego, callbacks={
     "menu": lambda: (logica_interfaz.reiniciar_juego(), logica_interfaz.ir_a_menu()),
 })
 
-# Frame de menú (se construye al final para capturar lambdas correctamente)
 frame_menu_principal = modulo_frame_menu.construir(ventana, on_jugar=lambda: abrir_juego(), on_repeticion=lambda: cargar_repeticion())
 
-
-# ==============================================
-# REGISTRO DE FRAMES EN logica_interfaz
-# ==============================================
 
 logica_interfaz.frame_menu       = frame_menu_principal
 logica_interfaz.frame_juego      = frame_juego
@@ -107,8 +99,6 @@ logica_interfaz.frame_ruta       = frame_ruta
 logica_interfaz.frame_victoria   = frame_victoria
 logica_interfaz.frame_como_gano  = frame_como_gano
 
-
-# NAVEGACIÓN
 
 def guardar_partida_con_confirmacion(ventana):
     """
@@ -284,12 +274,9 @@ def abrir_pantalla_victoria():
     logica_interfaz.mostrar_frame(frame_victoria)
 
 
-# INICIO
-
 logica_interfaz.inicializar_juego()
 actualizar_estado()
 
-# Registrar frame_menu en logica_interfaz
 logica_interfaz.frame_menu = frame_menu_principal
 logica_interfaz.mostrar_frame(frame_menu_principal)
 
